@@ -1,7 +1,8 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { SystemPermissionApi } from '#/api/system/role';
+import type { OnActionClickFn } from '#/adapter/vxe-table';
 
-
+import { formatDateTime } from '@vben/utils';
 import { $t } from '#/locales';
 
 export function getMethodOptions() {
@@ -14,7 +15,9 @@ export function getMethodOptions() {
   ];
 }
 
-export function useColumns(): VxeTableGridOptions<SystemPermissionApi.SystemPermission>['columns'] {
+export function useColumns(
+  onActionClick: OnActionClickFn<SystemPermissionApi.SystemPermission>,
+): VxeTableGridOptions<SystemPermissionApi.SystemPermission>['columns'] {
   return [
     {
       align: 'center',
@@ -48,10 +51,33 @@ export function useColumns(): VxeTableGridOptions<SystemPermissionApi.SystemPerm
       minWidth: 300,
     },
     {
-      align: 'center',
       field: 'created_at',
+      formatter: ({ cellValue }) => formatDateTime(cellValue),
       title: $t('system.permission.createdAt'),
-      width: 180,
+      width: 200,
+    },
+    {
+      align: 'center',
+      cellRender: {
+        name: 'CellOperation',
+        props: {
+          actions: [
+            {
+              label: $t('common.delete'),
+              type: 'error',
+            },
+          ],
+        },
+        attrs: {
+          nameField: 'name',
+          nameTitle: $t('system.permission.name'),
+          onClick: onActionClick,
+        },
+      },
+      field: 'operation',
+      fixed: 'right',
+      title: $t('system.role.operation'),
+      width: 130,
     },
   ];
 }

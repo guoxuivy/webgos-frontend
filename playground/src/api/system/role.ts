@@ -46,6 +46,14 @@ async function getPermissions() {
 }
 
 /**
+ * 删除权限
+ * @param id 权限 ID
+ */
+async function deletePermission(id: number) {
+  return requestClient.delete(`/api/rbac/permissions/${id}`);
+}
+
+/**
  * 获取角色列表数据
  * '/api/rbac/roles'
  */
@@ -85,7 +93,10 @@ async function deleteRole(id: string) {
   return requestClient.delete(`/api/rbac/role/${id}`);
 }
 
+
+
 export {
+  deletePermission,
   createRole,
   deleteRole,
   getPermissions,
