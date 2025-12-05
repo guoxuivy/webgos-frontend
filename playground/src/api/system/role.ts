@@ -138,12 +138,16 @@ function optimizeTree(tree: Array<SystemPermissionApi.SystemPermission>): Array<
     // 如果节点有子节点，递归优化子节点
     if (node.children && node.children.length > 0) {
       const optimizedChildren = optimizeTree(node.children);
-      optimizedNode.children = optimizedChildren;
+      (optimizedNode as any).children = optimizedChildren;
 
       // 如果只有一个子节点，且当前节点是临时生成的节点（ID为负数），则省略该节点
       if (optimizedChildren.length === 1 && optimizedNode.id < 0) {
         // 将当前节点的属性合并到子节点
         const child = { ...optimizedChildren[0] };
+        // 确保子节点具有必需的id属性
+        if (child.id === undefined) {
+          child.id = optimizedNode.id;
+        }
         // 保留子节点的ID，合并其他属性
         child.name = child.name;
         child.description = child.description || optimizedNode.description;
@@ -159,6 +163,7 @@ function optimizeTree(tree: Array<SystemPermissionApi.SystemPermission>): Array<
 
   return optimizedTree;
 }
+
 // 为字符串添加hashCode方法
 function hashCode(str: string) {
   let hash = 0;
@@ -170,16 +175,18 @@ function hashCode(str: string) {
   return hash;
 }
 
-
-
 /**
- * 获取权限点列表
+ * 获取权限列表
+ * @param params 搜索参数
  */
-async function getPermissions() {
-  const permissions = await requestClient.get<Array<SystemPermissionApi.SystemPermission>>('/api/rbac/permissions');
+async function getPermissions(params: Record<string, any> = {}) {
+  const permissions = await requestClient.get<Array<SystemPermissionApi.SystemPermission>>('/api/rbac/permissions',{
+    params,
+  });
   // 将扁平权限转换为树形结构
   return convertPermissionsToTree(permissions);
 }
+
 
 /**
  * 删除权限

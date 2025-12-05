@@ -1,6 +1,7 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { SystemPermissionApi } from '#/api/system/role';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
+import type { VbenFormSchema } from '#/adapter/form';
 
 import { formatDateTime } from '@vben/utils';
 import { $t } from '#/locales';
@@ -12,6 +13,30 @@ export function getMethodOptions() {
     { color: 'warning', label: 'PUT', value: 'PUT' },
     { color: 'error', label: 'DELETE', value: 'DELETE' },
     { color: 'default', label: 'PATCH', value: 'PATCH' },
+  ];
+}
+
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      fieldName: 'name',
+      label: $t('system.permission.name'),
+    },
+    {
+      component: 'Input',
+      fieldName: 'path',
+      label: $t('system.permission.path'),
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: getMethodOptions(),
+      },
+      fieldName: 'method',
+      label: $t('system.permission.method'),
+    },
   ];
 }
 

@@ -12,6 +12,7 @@ import { message } from 'ant-design-vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getPermissions, deletePermission } from '#/api/system/role';
 import { useColumns } from './data';
+import { useGridFormSchema } from './data';
 
 
 
@@ -62,6 +63,10 @@ function onActionClick({
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+  },
   gridOptions: {
     columns: useColumns(onActionClick),
     height: 'auto',
@@ -72,8 +77,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
     },
     proxyConfig: {
       ajax: {
-        query: async (_params) => {
-          const data = await getPermissions();
+        query: async (_params, formValues) => {
+          const data = await getPermissions(formValues);
           // 不分页直接返回列表
           return data;
         },
@@ -86,6 +91,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       custom: true,
       export: false,
       refresh: true,
+      search: true,
       zoom: true,
     },
     // 树配置
