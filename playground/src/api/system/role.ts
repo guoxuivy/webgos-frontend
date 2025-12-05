@@ -29,7 +29,7 @@ async function getRoleList(params: Recordable<any>) {
  * @param data 角色数据
  */
 async function createRole(data: Omit<SystemRoleApi.SystemRole, 'id'>) {
-  return requestClient.post('/system/role', data);
+  return requestClient.post('/api/rbac/role', data);
 }
 
 /**
@@ -43,7 +43,7 @@ async function updateRole(
   data: Omit<SystemRoleApi.SystemRole, 'id'>,
 ) {
   // 确保menus字段被正确传递
-  return requestClient.post(`/api/rbac/edit/role`, { ...data, id });
+  return requestClient.put(`/api/rbac/role`, { ...data, id });
 }
 
 /**
@@ -51,7 +51,7 @@ async function updateRole(
  * @param id 角色 ID
  */
 async function deleteRole(id: string) {
-  return requestClient.delete(`/system/role/${id}`);
+  return requestClient.delete(`/api/rbac/role/${id}`);
 }
 
 export { createRole, deleteRole, getRoleList, updateRole };

@@ -78,20 +78,33 @@ const [Drawer, drawerApi] = useVbenDrawer({
 async function initRoleOptions() {
   try {
     const result = await getRoleList({});
-    const options = result.items?.map((item: any) => ({
+    // 确保result是对象且有items属性
+    const items = result?.items || [];
+    const options = items.map((item: any) => ({
       label: item.name,
       value: item.id,
-    })) || [];
+    }));
+    
+    // 直接更新整个角色字段的架构
     formApi.updateSchema([
       {
+        component: 'Select',
         componentProps: {
+          allowClear: true,
+          mode: 'multiple',
           options,
+          placeholder: $t('system.user.selectRoles'),
+          showSearch: true,
+          style: { width: '80%' },
         },
         fieldName: 'roleIds',
+        label: $t('system.user.roleIds'),
       },
     ]);
+    
+
   } catch (error) {
-    console.error('获取角色列表失败:', error);
+
   }
 }
 
@@ -106,6 +119,11 @@ async function onSubmit(values: Recordable<any>) {
     // 如果是编辑模式且没有输入新密码，则不发送密码字段
     if (id.value && (!values.password || values.password.length === 0)) {
       delete values.password;
+    }
+
+    // 如果是编辑模式且没有输入新角色，则不发送角色字段
+    if (id.value && (!values.roleIds || values.roleIds.length === 0)) {
+      delete values.roleIds;
     }
     
     await saveUser(values);

@@ -10,6 +10,14 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
+      fieldName: 'id',
+      label: '',
+      componentProps: {
+        type: 'hidden'
+      },
+    },
+    {
+      component: 'Input',
       fieldName: 'username',
       label: $t('system.user.username'),
       rules: 'required',
@@ -18,11 +26,8 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'InputPassword',
       fieldName: 'password',
       label: $t('system.user.password'),
-      rules: 'required',
-      help: '密码长度不能少于6位',
-      componentProps: {
-        placeholder: '请输入至少6位密码'
-      }
+      help: '不修改密码请留空',
+      componentProps: { placeholder: '不修改密码请留空' }
     },
     {
       component: 'Input',
@@ -55,12 +60,9 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'Select',
-      componentProps: {
-        mode: 'multiple',
-        placeholder: $t('system.user.selectRoles'),
-      },
-      fieldName: 'roleIds',
-      label: $t('system.user.roleIds'),
+      componentProps: { allowClear: true, mode: 'multiple', options: [], placeholder: $t('system.user.selectRoles'), showSearch: true, style: { width: '100%' } },
+      fieldName: 'roleIds', label: $t('system.user.roleIds'),
+      help: '不修请留空',
     },
   ];
 }

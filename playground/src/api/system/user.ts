@@ -33,7 +33,7 @@ async function getUserList(params: any) {
  * @param data 用户数据
  */
 async function saveUser(data: any) {
-  return requestClient.post('/api/user/save', data);
+  return requestClient.post('/api/user/edit', data);
 }
 
 /**
