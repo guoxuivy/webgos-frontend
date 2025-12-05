@@ -144,14 +144,7 @@ function optimizeTree(tree: Array<SystemPermissionApi.SystemPermission>): Array<
       if (optimizedChildren.length === 1 && optimizedNode.id < 0) {
         // 将当前节点的属性合并到子节点
         const child = { ...optimizedChildren[0] };
-        // 确保子节点具有必需的id属性
-        if (child.id === undefined) {
-          child.id = optimizedNode.id;
-        }
-        // 保留子节点的ID，合并其他属性
-        child.name = child.name;
-        child.description = child.description || optimizedNode.description;
-        optimizedTree.push(child);
+        optimizedTree.push(child as SystemPermissionApi.SystemPermission);
       } else {
         optimizedTree.push(optimizedNode);
       }
