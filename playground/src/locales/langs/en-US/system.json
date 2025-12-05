@@ -78,6 +78,15 @@
     "assignRoles": "Assign Roles",
     "nickname": "Nickname",
     "roleIds": "Role IDs",
-    "selectRoles": "Select Roles"
-  }
+      "selectRoles": "Select Roles"
+    },
+    "permission": {
+      "id": "Permission ID",
+      "name": "Permission Name",
+      "description": "Description",
+      "path": "Path",
+      "method": "Method",
+      "createdAt": "Created At",
+      "title": "Permission Management"
+    }
 }

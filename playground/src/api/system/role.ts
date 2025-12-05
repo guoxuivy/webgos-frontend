@@ -15,6 +15,37 @@ export namespace SystemRoleApi {
 }
 
 /**
+ * 权限管理相关API
+ */
+export namespace SystemPermissionApi {
+  /** 权限点 */
+  export interface SystemPermission {
+    [key: string]: any;
+    /** 权限ID */
+    id: number;
+    /** 权限名称 */
+    name: string;
+    /** 权限描述 */
+    description: string;
+    /** 路由路径 */
+    path: string;
+    /** 请求方法 */
+    method: string;
+    /** 创建时间 */
+    created_at?: string;
+    /** 更新时间 */
+    updated_at?: string;
+  }
+}
+
+/**
+ * 获取权限点列表
+ */
+async function getPermissions() {
+  return requestClient.get<Array<SystemPermissionApi.SystemPermission>>('/api/rbac/permissions');
+}
+
+/**
  * 获取角色列表数据
  * '/api/rbac/roles'
  */
@@ -54,4 +85,10 @@ async function deleteRole(id: string) {
   return requestClient.delete(`/api/rbac/role/${id}`);
 }
 
-export { createRole, deleteRole, getRoleList, updateRole };
+export {
+  createRole,
+  deleteRole,
+  getPermissions,
+  getRoleList,
+  updateRole,
+};
