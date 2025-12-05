@@ -19,17 +19,18 @@ export function useColumns(
   onActionClick: OnActionClickFn<SystemPermissionApi.SystemPermission>,
 ): VxeTableGridOptions<SystemPermissionApi.SystemPermission>['columns'] {
   return [
-    {
-      align: 'center',
-      field: 'id',
-      title: $t('system.permission.id'),
-      width: 80,
-    },
+    // {
+    //   align: 'center',
+    //   field: 'id',
+    //   title: $t('system.permission.id'),
+    //   width: 80,
+    // },
     {
       align: 'left',
       field: 'name',
       title: $t('system.permission.name'),
-      width: 200,
+      treeNode: true, // 设置为树形节点列
+      width: 300,
     },
     {
       align: 'left',

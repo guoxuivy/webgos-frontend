@@ -35,14 +35,111 @@ export namespace SystemPermissionApi {
     created_at?: string;
     /** 更新时间 */
     updated_at?: string;
+    /** 父级ID */
+    pid?: number;
+    /** 子节点 */
+    children?: SystemPermission[];
   }
 }
+
+/**
+ * 将权限列表转换为树形结构
+ * @param permissions 扁平的权限列表
+ * @returns 树形结构的权限列表
+ */
+function convertPermissionsToTree(permissions: Array<SystemPermissionApi.SystemPermission>): Array<SystemPermissionApi.SystemPermission> {
+  // 创建权限映射，用于快速查找
+  const permissionMap = new Map<number, SystemPermissionApi.SystemPermission>();
+  const rootPermissions: Array<SystemPermissionApi.SystemPermission> = [];
+  const tempNodes: Record<string, { permission: SystemPermissionApi.SystemPermission; level: number; pathParts: string[] }> = {};
+
+  // 处理每个权限
+  permissions.forEach(permission => {
+    // 深拷贝权限对象
+    const permissionCopy = { ...permission, children: [] };
+    permissionMap.set(permission.id, permissionCopy);
+
+    // 分割权限名称，支持斜线(/)和冒号(:)作为分隔符
+    const nameParts = permission.name.split(/[:/]/).filter(Boolean);
+    if (nameParts.length === 1) {
+      // 根节点权限
+      rootPermissions.push(permissionCopy);
+    } else {
+      // 非根节点权限，需要构建临时路径
+      for (let i = 0; i < nameParts.length; i++) {
+        const path = nameParts.slice(0, i + 1).join(':');
+        const level = i;
+        const pathParts = nameParts.slice(0, i + 1);
+
+        if (!tempNodes[path]) {
+          if (i === nameParts.length - 1) {
+            // 叶子节点，使用真实权限
+            tempNodes[path] = { permission: permissionCopy, level, pathParts };
+          } else {
+            // 中间节点，创建临时权限
+            tempNodes[path] = {
+              permission: {
+                id: -Math.abs(hashCode(path)), // 生成临时ID
+                name: path,
+                description: ``,
+                path: '',
+                method: '',
+                children: [],
+              },
+              level,
+              pathParts,
+            };
+          }
+        }
+      }
+    }
+  });
+
+  // 构建树形结构
+  Object.values(tempNodes).forEach(({ permission, level, pathParts }) => {
+    if (level === 0) {
+      // 顶级节点
+      if (!rootPermissions.find(p => p.name === permission.name)) {
+        rootPermissions.push(permission);
+      }
+    } else {
+      // 非顶级节点，找到父节点
+      const parentPath = pathParts.slice(0, -1).join(':');
+      const parent = tempNodes[parentPath]?.permission;
+      if (parent) {
+        if (!parent.children) {
+          parent.children = [];
+        }
+        // 检查是否已存在该子节点
+        if (!parent.children.find(child => child.id === permission.id)) {
+          parent.children.push(permission);
+        }
+      }
+    }
+  });
+
+  return rootPermissions;
+}
+// 为字符串添加hashCode方法
+function hashCode(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash;
+}
+
+
 
 /**
  * 获取权限点列表
  */
 async function getPermissions() {
-  return requestClient.get<Array<SystemPermissionApi.SystemPermission>>('/api/rbac/permissions');
+  const permissions = await requestClient.get<Array<SystemPermissionApi.SystemPermission>>('/api/rbac/permissions');
+  // 将扁平权限转换为树形结构
+  return convertPermissionsToTree(permissions);
 }
 
 /**

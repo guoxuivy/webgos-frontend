@@ -88,6 +88,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       refresh: true,
       zoom: true,
     },
+    // 树配置
+    treeConfig: {
+      parentField: 'pid',
+      rowField: 'id',
+      childrenField: 'children',
+      transform: false,
+    },
   } as VxeTableGridOptions,
 });
 </script>
