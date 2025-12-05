@@ -94,6 +94,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
       rowField: 'id',
       childrenField: 'children',
       transform: false,
+      // 默认展开全部节点
+      expandAll: true,
     },
   } as VxeTableGridOptions,
 });

@@ -118,7 +118,46 @@ function convertPermissionsToTree(permissions: Array<SystemPermissionApi.SystemP
     }
   });
 
-  return rootPermissions;
+  // 优化树形结构：非终端节点只有一个子节点时省略该节点
+  return optimizeTree(rootPermissions);
+}
+
+/**
+ * 优化树形结构
+ * 当非终端节点只有一个子节点时，省略该节点，将子节点提升到当前节点位置
+ * @param tree 树形结构
+ * @returns 优化后的树形结构
+ */
+function optimizeTree(tree: Array<SystemPermissionApi.SystemPermission>): Array<SystemPermissionApi.SystemPermission> {
+  const optimizedTree: Array<SystemPermissionApi.SystemPermission> = [];
+
+  tree.forEach(node => {
+    // 深拷贝节点
+    const optimizedNode = { ...node, children: [] };
+
+    // 如果节点有子节点，递归优化子节点
+    if (node.children && node.children.length > 0) {
+      const optimizedChildren = optimizeTree(node.children);
+      optimizedNode.children = optimizedChildren;
+
+      // 如果只有一个子节点，且当前节点是临时生成的节点（ID为负数），则省略该节点
+      if (optimizedChildren.length === 1 && optimizedNode.id < 0) {
+        // 将当前节点的属性合并到子节点
+        const child = { ...optimizedChildren[0] };
+        // 保留子节点的ID，合并其他属性
+        child.name = child.name;
+        child.description = child.description || optimizedNode.description;
+        optimizedTree.push(child);
+      } else {
+        optimizedTree.push(optimizedNode);
+      }
+    } else {
+      // 叶子节点直接添加
+      optimizedTree.push(optimizedNode);
+    }
+  });
+
+  return optimizedTree;
 }
 // 为字符串添加hashCode方法
 function hashCode(str: string) {
