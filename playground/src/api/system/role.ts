@@ -43,7 +43,7 @@ async function updateRole(
   data: Omit<SystemRoleApi.SystemRole, 'id'>,
 ) {
   // 确保menus字段被正确传递
-  return requestClient.put(`/api/rbac/role`, { ...data, id });
+  return requestClient.post(`/api/rbac/edit_role`, { ...data, id });
 }
 
 /**
