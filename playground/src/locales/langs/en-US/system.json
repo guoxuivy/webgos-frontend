@@ -62,5 +62,20 @@
     "operation": "Operation",
     "permissions": "Permissions",
     "setPermissions": "Permissions"
+  },
+  "user": {
+    "list": "User List",
+    "name": "User",
+    "username": "Username",
+    "nickname": "Nickname",
+    "phone": "Phone Number",
+    "email": "Email",
+    "age": "Age",
+    "gender": "Gender",
+    "status": "Status",
+    "roles": "Roles",
+    "selectRoles": "Please Select Role",
+    "createAt": "Created At",
+    "operation": "Operation"
   }
 }

@@ -19,7 +19,7 @@ export namespace SystemRoleApi {
  * '/api/rbac/roles'
  */
 async function getRoleList(params: Recordable<any>) {
-  return requestClient.get<Array<SystemRoleApi.SystemRole>>('/api/rbac/roles', {
+  return requestClient.get<{ items: Array<SystemRoleApi.SystemRole>; total: number }>('/api/rbac/roles', {
     params,
   });
 }

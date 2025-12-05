@@ -64,5 +64,24 @@
     "permissions": "权限",
     "setPermissions": "授权"
   },
+  "user": {
+    "list": "用户列表",
+    "name": "用户",
+    "id": "用户ID",
+    "username": "用户名",
+    "nickname": "昵称",
+    "password": "密码",
+    "phone": "手机号",
+    "email": "邮箱",
+    "age": "年龄",
+    "gender": "性别",
+    "status": "状态",
+    "roles": "角色",
+    "selectRoles": "请选择角色",
+    "createdAt": "创建时间",
+    "operation": "操作",
+    "roleIds": "角色ID",
+    "title": "用户管理"
+  },
   "title": "系统管理"
 }
