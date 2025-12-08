@@ -190,6 +190,21 @@ async function deletePermission(id: number) {
 }
 
 /**
+ * 给角色分配api权限
+ * post /api/rbac/assign_permissions
+ * @param data 权限分配数据
+ */
+async function assignPermissions(
+  data: {
+    permission_ids: number[];
+    role_id: number;
+  },
+) {
+  return requestClient.post(`/api/rbac/assign_permissions`, data);
+}
+
+
+/**
  * 获取角色列表数据
  * '/api/rbac/roles'
  */
@@ -233,6 +248,7 @@ async function deleteRole(id: string) {
 
 export {
   deletePermission,
+  assignPermissions,
   createRole,
   deleteRole,
   getPermissions,

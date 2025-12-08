@@ -86,14 +86,9 @@ export function useColumns(
       align: 'center',
       cellRender: {
         name: 'CellOperation',
-        props: {
-          actions: [
-            {
-              label: $t('common.delete'),
-              type: 'error',
-            },
-          ],
-        },
+        options: [
+          'delete'
+        ],
         attrs: {
           nameField: 'name',
           nameTitle: $t('system.permission.name'),
