@@ -87,7 +87,11 @@ export function useColumns(
       cellRender: {
         name: 'CellOperation',
         options: [
-          'delete'
+          {
+            code: 'delete',
+            show: (row: SystemPermissionApi.SystemPermission) => row.id >= 0,
+          },
+
         ],
         attrs: {
           nameField: 'name',

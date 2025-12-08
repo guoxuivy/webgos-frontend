@@ -17,7 +17,7 @@ import { useGridFormSchema } from './data';
 
 
 /**
- * 删除部门
+ * 删除权限
  * @param row
  */
 function onDelete(row: SystemPermissionApi.SystemPermission) {

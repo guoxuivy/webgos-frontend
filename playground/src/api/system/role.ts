@@ -187,7 +187,7 @@ async function getPermissions(params: Record<string, any> = {}) {
  * @param id 权限 ID
  */
 async function deletePermission(id: number) {
-  return requestClient.delete(`/api/rbac/permissions/${id}`);
+  return requestClient.delete(`/api/rbac/permission/${id}`);
 }
 
 /**
