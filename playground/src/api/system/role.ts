@@ -8,6 +8,7 @@ export namespace SystemRoleApi {
     created_at: string;
     id: string;
     menus: string[];
+    permission_ids: string[];
     name: string;
     remark?: string;
     status: 0 | 1;

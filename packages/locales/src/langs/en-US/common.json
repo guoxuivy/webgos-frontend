@@ -19,6 +19,10 @@
   "create": "Create",
   "yes": "Yes",
   "no": "No",
+  "saveSuccess": "Save Success",
+  "loadSuccess": "Load Success",
+  "loadFail": "Load Failed",
+  "saveFailed": "Save Failed",
   "showSearchPanel": "Show search panel",
   "hideSearchPanel": "Hide search panel"
 }

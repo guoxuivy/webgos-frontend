@@ -19,6 +19,10 @@
   "create": "新增",
   "yes": "是",
   "no": "否",
+  "saveSuccess": "保存成功",
+  "loadSuccess": "加载成功",
+  "loadFail": "加载失败",
+  "saveFailed": "保存失败",
   "showSearchPanel": "显示搜索面板",
   "hideSearchPanel": "隐藏搜索面板"
 }

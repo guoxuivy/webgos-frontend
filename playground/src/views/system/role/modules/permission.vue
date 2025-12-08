@@ -6,7 +6,7 @@ import { ref } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '#/locales';
-import { getPermissions, updateRole } from '#/api/system/role';
+import { getPermissions, assignPermissions } from '#/api/system/role';
 
 import { Tree, message } from 'ant-design-vue';
 import type { TreeProps } from 'ant-design-vue';
@@ -24,16 +24,21 @@ const [Drawer, drawerApi] = useVbenDrawer({
     
     drawerApi.lock();
     try {
-      await updateRole(formData.value.id, { 
-        ...formData.value,
-        menus: Array.isArray(checkedKeys.value) ? checkedKeys.value : []
+      let permission_ids = Array.isArray(checkedKeys.value) ? checkedKeys.value.map(Number) : [];
+      //过滤负数ID
+      permission_ids = permission_ids.filter(id => id >= 0);
+
+      await assignPermissions({
+        role_id: Number(formData.value.id),
+        permission_ids: permission_ids,    
       });
       
       message.success($t('common.saveSuccess'));
       emits('success');
       drawerApi.close();
     } catch (error) {
-      console.error($t('system.permission.saveFailed'), error);
+      console.error($t('common.saveFailed'), error);
+      message.error($t('common.saveFailed'));
     } finally {
       drawerApi.unlock();
     }
@@ -45,7 +50,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       if (data) {
         formData.value = data;
         // 设置已选中的权限
-        checkedKeys.value = data.menus || [];
+        checkedKeys.value = data.permission_ids || [];
         
         // 加载所有权限列表
         await loadPermissions();
@@ -60,7 +65,6 @@ async function loadPermissions() {
     // 转换权限数据格式以匹配 Tree 组件的 DataNode 类型，并确保有 key 字段
     permissions.value = permissionData.map(transformPermission);
   } catch (error) {
-    console.error($t('system.permission.loadFailed'), error);
     message.error($t('common.loadFail'));
   }
 }

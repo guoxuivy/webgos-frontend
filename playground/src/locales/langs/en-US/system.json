@@ -88,8 +88,6 @@
     "path": "Path",
     "method": "Method",
     "createdAt": "Created At",
-    "title": "Permission Management",
-    "saveFailed": "Failed to save permissions",
-    "loadFailed": "Failed to load permission list"
+    "title": "Permission Management"
   }
 }

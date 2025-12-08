@@ -89,9 +89,7 @@
     "path": "路由路径",
     "method": "请求方法",
     "createdAt": "创建时间",
-    "title": "权限管理",
-    "saveFailed": "保存权限失败",
-    "loadFailed": "加载权限列表失败"
+    "title": "权限管理"
   },
   "title": "系统管理"
 }
