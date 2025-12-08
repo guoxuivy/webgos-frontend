@@ -22,6 +22,15 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/system/role/list.vue'),
       },
       {
+        path: '/system/permission',
+        name: 'SystemPermission',
+        meta: {
+          icon: 'carbon:security',
+          title: $t('system.permission.title'),
+        },
+        component: () => import('#/views/system/permission/list.vue'),
+      },
+      {
         path: '/system/menu',
         name: 'SystemMenu',
         meta: {
@@ -48,15 +57,6 @@ const routes: RouteRecordRaw[] = [
           title: $t('system.user.title'),
         },
         component: () => import('#/views/system/user/list.vue'),
-      },
-      {
-        path: '/system/permission',
-        name: 'SystemPermission',
-        meta: {
-          icon: 'carbon:security',
-          title: $t('system.permission.title'),
-        },
-        component: () => import('#/views/system/permission/list.vue'),
       },
     ],
   },

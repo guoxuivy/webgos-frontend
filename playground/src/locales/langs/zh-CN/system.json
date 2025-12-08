@@ -62,7 +62,8 @@
     "createAt": "创建时间",
     "operation": "操作",
     "permissions": "权限",
-    "setPermissions": "授权"
+    "setPermissions": "菜单授权",
+    "setAPIPermissions": "接口授权"
   },
   "user": {
     "list": "用户列表",
