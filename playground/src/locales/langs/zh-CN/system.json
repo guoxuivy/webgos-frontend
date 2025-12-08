@@ -80,16 +80,18 @@
     "assignRoles": "分配角色",
     "nickname": "昵称",
     "roleIds": "角色ID",
-      "selectRoles": "选择角色"
-    },
-    "permission": {
-      "id": "权限ID",
-      "name": "权限名称",
-      "description": "权限描述",
-      "path": "路由路径",
-      "method": "请求方法",
-      "createdAt": "创建时间",
-      "title": "权限管理"
-    },
+    "selectRoles": "选择角色"
+  },
+  "permission": {
+    "id": "权限ID",
+    "name": "权限名称",
+    "description": "权限描述",
+    "path": "路由路径",
+    "method": "请求方法",
+    "createdAt": "创建时间",
+    "title": "权限管理",
+    "saveFailed": "保存权限失败",
+    "loadFailed": "加载权限列表失败"
+  },
   "title": "系统管理"
 }

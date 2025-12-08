@@ -61,7 +61,8 @@
     "createAt": "Creation At",
     "operation": "Operation",
     "permissions": "Permissions",
-    "setPermissions": "Permissions"
+    "setPermissions": "Permissions",
+    "setAPIPermissions": "API Permissions"
   },
   "user": {
     "list": "User List",
@@ -78,15 +79,17 @@
     "assignRoles": "Assign Roles",
     "nickname": "Nickname",
     "roleIds": "Role IDs",
-      "selectRoles": "Select Roles"
-    },
-    "permission": {
-      "id": "Permission ID",
-      "name": "Permission Name",
-      "description": "Description",
-      "path": "Path",
-      "method": "Method",
-      "createdAt": "Created At",
-      "title": "Permission Management"
-    }
+    "selectRoles": "Select Roles"
+  },
+  "permission": {
+    "id": "Permission ID",
+    "name": "Permission Name",
+    "description": "Description",
+    "path": "Path",
+    "method": "Method",
+    "createdAt": "Created At",
+    "title": "Permission Management",
+    "saveFailed": "Failed to save permissions",
+    "loadFailed": "Failed to load permission list"
+  }
 }

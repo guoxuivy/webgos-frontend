@@ -33,7 +33,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       emits('success');
       drawerApi.close();
     } catch (error) {
-      console.error('保存权限失败:', error);
+      console.error($t('system.permission.saveFailed'), error);
     } finally {
       drawerApi.unlock();
     }
@@ -60,7 +60,7 @@ async function loadPermissions() {
     // 转换权限数据格式以匹配 Tree 组件的 DataNode 类型，并确保有 key 字段
     permissions.value = permissionData.map(transformPermission);
   } catch (error) {
-    console.error('加载权限列表失败:', error);
+    console.error($t('system.permission.loadFailed'), error);
     message.error($t('common.loadFail'));
   }
 }
