@@ -121,29 +121,19 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
         },
         name: 'CellOperation',
         options: [
-          'edit',
-          'permission',
-          'delete',
+          {
+            code: 'edit',
+            text: $t('common.edit'),
+          },
+          {
+            code: 'permission',
+            text: $t('system.role.setAPIPermissions'),
+          },
+          {
+            code: 'delete',
+            text: $t('common.delete'),
+          },
         ],
-        props: {
-          actions: [
-            {
-              code: 'edit',
-              text: $t('common.edit'),
-              type: 'primary',
-            },
-            {
-              code: 'permission',
-              text: $t('system.role.setAPIPermissions'),
-              type: 'success',
-            },
-            {
-              code: 'delete',
-              text: $t('common.delete'),
-              type: 'error',
-            },
-          ],
-        },
       },
       field: 'operation',
       fixed: 'right',
