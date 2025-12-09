@@ -8,7 +8,8 @@ import { defineOverridesPreferences } from '@vben/preferences';
 export const overridesPreferences = defineOverridesPreferences({
   // overrides
   app: {
+    defaultHomePath: '/workspace',
     name: import.meta.env.VITE_APP_TITLE,
-    accessMode: 'frontend', // 前端控制权限模式
+    accessMode: 'backend', // 菜单权限控制模式frontend/backend/mixed
   },
 });

@@ -2,6 +2,7 @@ import type { RouteRecordRaw } from 'vue-router';
 
 import { $t } from '#/locales';
 
+// 混合模式mixed下 系统管理功能模块 由后台接口控制权限 RouteRecordRaw 返回空数组
 const routes: RouteRecordRaw[] = [
   {
     meta: {
