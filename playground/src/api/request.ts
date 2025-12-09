@@ -98,7 +98,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       const { data: responseData, status } = response;
 
       const { code, data } = responseData;
-      if (status >= 200 && status < 400 && code === 200) {
+      if (status ===200 && code === 0) {
         return data;
       }
       throw Object.assign({}, response, { response });
