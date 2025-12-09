@@ -5,8 +5,8 @@
       "path": "apps/backend-mock",
     },
     {
-      "name": "@vben/web-erp",
-      "path": "apps/web-erp",
+      "name": "@vben/web-admin",
+      "path": "apps/web-admin",
     },
     {
       "name": "@vben/docs",
