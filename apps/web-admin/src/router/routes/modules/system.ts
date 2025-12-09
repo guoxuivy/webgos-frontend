@@ -48,7 +48,6 @@ const routes: RouteRecordRaw[] = [
         },
         component: () => import('#/views/system/dept/list.vue'),
       },
-      
       {
         path: '/system/user',
         name: 'SystemUser',
