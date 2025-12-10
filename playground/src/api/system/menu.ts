@@ -92,28 +92,27 @@ export namespace SystemMenuApi {
 
 /**
  * 获取菜单数据列表
- * system/menu/list
  */
 async function getMenuList() {
-  return requestClient.get<Array<SystemMenuApi.SystemMenu>>('/api/menu/tree');
+  return requestClient.get<Array<SystemMenuApi.SystemMenu>>(
+    '/system/menu/list',
+  );
 }
 
-// system/menu/name-exists
 async function isMenuNameExists(
   name: string,
   id?: SystemMenuApi.SystemMenu['id'],
 ) {
-  return requestClient.get<boolean>('/api/menu/name_exists', {
+  return requestClient.get<boolean>('/system/menu/name-exists', {
     params: { id, name },
   });
 }
 
-// system/menu/path-exists
 async function isMenuPathExists(
   path: string,
   id?: SystemMenuApi.SystemMenu['id'],
 ) {
-  return requestClient.get<boolean>('/api/menu/path_exists', {
+  return requestClient.get<boolean>('/system/menu/path-exists', {
     params: { id, path },
   });
 }
@@ -121,12 +120,11 @@ async function isMenuPathExists(
 /**
  * 创建菜单
  * @param data 菜单数据
- * /system/menu
  */
 async function createMenu(
   data: Omit<SystemMenuApi.SystemMenu, 'children' | 'id'>,
 ) {
-  return requestClient.post('/api/menu/add', data);
+  return requestClient.post('/system/menu', data);
 }
 
 /**
@@ -139,8 +137,7 @@ async function updateMenu(
   id: string,
   data: Omit<SystemMenuApi.SystemMenu, 'children' | 'id'>,
 ) {
-  // 将id添加到data中一起发送
-  return requestClient.post(`/api/menu/edit`, { ...data, id });
+  return requestClient.put(`/system/menu/${id}`, data);
 }
 
 /**
@@ -148,7 +145,7 @@ async function updateMenu(
  * @param id 菜单 ID
  */
 async function deleteMenu(id: string) {
-  return requestClient.post(`/api/menu/delete/${id}`);
+  return requestClient.delete(`/system/menu/${id}`);
 }
 
 export {

@@ -2,8 +2,6 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { SystemRoleApi } from '#/api';
 
-import { formatDateTime } from '@vben/utils';
-
 import { $t } from '#/locales';
 
 export function useFormSchema(): VbenFormSchema[] {
@@ -35,7 +33,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'Input',
-      fieldName: 'menus',
+      fieldName: 'permissions',
       formItemClass: 'items-start',
       label: $t('system.role.setPermissions'),
       modelPropName: 'modelValue',
@@ -70,8 +68,8 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'RangePicker',
-      fieldName: 'created_at',
-      label: $t('system.role.createAt'),
+      fieldName: 'createTime',
+      label: $t('system.role.createTime'),
     },
   ];
 }
@@ -106,9 +104,8 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
       title: $t('system.role.remark'),
     },
     {
-      field: 'created_at',
-      formatter: ({ cellValue }) => formatDateTime(cellValue),
-      title: $t('system.role.createAt'),
+      field: 'createTime',
+      title: $t('system.role.createTime'),
       width: 200,
     },
     {
@@ -120,25 +117,11 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
           onClick: onActionClick,
         },
         name: 'CellOperation',
-        options: [
-          {
-            code: 'edit',
-            text: $t('common.edit'),
-          },
-          {
-            code: 'permission',
-            text: $t('system.role.setAPIPermissions'),
-          },
-          {
-            code: 'delete',
-            text: $t('common.delete'),
-          },
-        ],
       },
       field: 'operation',
       fixed: 'right',
       title: $t('system.role.operation'),
-      width: 160,
+      width: 130,
     },
   ];
 }
