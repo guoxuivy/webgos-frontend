@@ -126,7 +126,8 @@ async function isMenuPathExists(
 async function createMenu(
   data: Omit<SystemMenuApi.SystemMenu, 'children' | 'id'>,
 ) {
-  return requestClient.post('/api/menu/add', data);
+  return requestClient.post('/api/menu', data);
+  // return requestClient.post('/api/menu/add', data);
 }
 
 /**
@@ -139,8 +140,9 @@ async function updateMenu(
   id: string,
   data: Omit<SystemMenuApi.SystemMenu, 'children' | 'id'>,
 ) {
+  return requestClient.put(`/api/menu/${id}`, data);
   // 将id添加到data中一起发送
-  return requestClient.post(`/api/menu/edit`, { ...data, id });
+  // return requestClient.post(`/api/menu/edit`, { ...data, id });
 }
 
 /**
@@ -148,7 +150,8 @@ async function updateMenu(
  * @param id 菜单 ID
  */
 async function deleteMenu(id: string) {
-  return requestClient.post(`/api/menu/delete/${id}`);
+  return requestClient.delete(`/api/menu/${id}`);
+  // return requestClient.post(`/api/menu/delete/${id}`);
 }
 
 export {
