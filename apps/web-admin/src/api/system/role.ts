@@ -48,14 +48,25 @@ export namespace SystemPermissionApi {
  * @param permissions 扁平的权限列表
  * @returns 树形结构的权限列表
  */
-function convertPermissionsToTree(permissions: Array<SystemPermissionApi.SystemPermission>): Array<SystemPermissionApi.SystemPermission> {
+function convertPermissionsToTree(
+  permissions: Array<SystemPermissionApi.SystemPermission>,
+): Array<SystemPermissionApi.SystemPermission> {
   // 创建权限映射，用于快速查找
   const permissionMap = new Map<number, SystemPermissionApi.SystemPermission>();
   const rootPermissions: Array<SystemPermissionApi.SystemPermission> = [];
-  const tempNodes: Record<string, { permission: SystemPermissionApi.SystemPermission; level: number; pathParts: string[] }> = {};
+  const tempNodes: Record<
+    string,
+    {
+      permission: SystemPermissionApi.SystemPermission;
+      level: number;
+      pathParts: string[];
+    }
+  > = {};
+
+  //todo /api/menu/:POST  和 /api/menu:POST 应该作为2条记录，现在后面的直接没了，需要修复
 
   // 处理每个权限
-  permissions.forEach(permission => {
+  permissions.forEach((permission) => {
     // 深拷贝权限对象
     const permissionCopy = { ...permission, children: [] };
     permissionMap.set(permission.id, permissionCopy);
@@ -68,7 +79,7 @@ function convertPermissionsToTree(permissions: Array<SystemPermissionApi.SystemP
     } else {
       // 非根节点权限，需要构建临时路径
       for (let i = 0; i < nameParts.length; i++) {
-        const path = nameParts.slice(0, i + 1).join(':');
+        const path = nameParts.slice(0, i + 1).join('/');
         const level = i;
         const pathParts = nameParts.slice(0, i + 1);
 
@@ -100,19 +111,19 @@ function convertPermissionsToTree(permissions: Array<SystemPermissionApi.SystemP
   Object.values(tempNodes).forEach(({ permission, level, pathParts }) => {
     if (level === 0) {
       // 顶级节点
-      if (!rootPermissions.find(p => p.name === permission.name)) {
+      if (!rootPermissions.find((p) => p.name === permission.name)) {
         rootPermissions.push(permission);
       }
     } else {
       // 非顶级节点，找到父节点
-      const parentPath = pathParts.slice(0, -1).join(':');
+      const parentPath = pathParts.slice(0, -1).join('/');
       const parent = tempNodes[parentPath]?.permission;
       if (parent) {
         if (!parent.children) {
           parent.children = [];
         }
         // 检查是否已存在该子节点
-        if (!parent.children.find(child => child.id === permission.id)) {
+        if (!parent.children.find((child) => child.id === permission.id)) {
           parent.children.push(permission);
         }
       }
@@ -129,10 +140,12 @@ function convertPermissionsToTree(permissions: Array<SystemPermissionApi.SystemP
  * @param tree 树形结构
  * @returns 优化后的树形结构
  */
-function optimizeTree(tree: Array<SystemPermissionApi.SystemPermission>): Array<SystemPermissionApi.SystemPermission> {
+function optimizeTree(
+  tree: Array<SystemPermissionApi.SystemPermission>,
+): Array<SystemPermissionApi.SystemPermission> {
   const optimizedTree: Array<SystemPermissionApi.SystemPermission> = [];
 
-  tree.forEach(node => {
+  tree.forEach((node) => {
     // 深拷贝节点
     const optimizedNode = { ...node, children: [] };
 
@@ -163,7 +176,7 @@ function hashCode(str: string) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
   return hash;
@@ -174,13 +187,14 @@ function hashCode(str: string) {
  * @param params 搜索参数
  */
 async function getPermissions(params: Record<string, any> = {}) {
-  const permissions = await requestClient.get<Array<SystemPermissionApi.SystemPermission>>('/api/rbac/permissions',{
+  const permissions = await requestClient.get<
+    Array<SystemPermissionApi.SystemPermission>
+  >('/api/rbac/permissions', {
     params,
   });
   // 将扁平权限转换为树形结构
   return convertPermissionsToTree(permissions);
 }
-
 
 /**
  * 删除权限
@@ -195,22 +209,22 @@ async function deletePermission(id: number) {
  * post /api/rbac/assign_permissions
  * @param data 权限分配数据
  */
-async function assignPermissions(
-  data: {
-    permission_ids: number[];
-    role_id: number;
-  },
-) {
+async function assignPermissions(data: {
+  permission_ids: number[];
+  role_id: number;
+}) {
   return requestClient.post(`/api/rbac/assign_permissions`, data);
 }
-
 
 /**
  * 获取角色列表数据
  * '/api/rbac/roles'
  */
 async function getRoleList(params: Recordable<any>) {
-  return requestClient.get<{ items: Array<SystemRoleApi.SystemRole>; total: number }>('/api/rbac/roles', {
+  return requestClient.get<{
+    items: Array<SystemRoleApi.SystemRole>;
+    total: number;
+  }>('/api/rbac/roles', {
     params,
   });
 }
@@ -244,8 +258,6 @@ async function updateRole(
 async function deleteRole(id: string) {
   return requestClient.delete(`/api/rbac/role/${id}`);
 }
-
-
 
 export {
   deletePermission,
