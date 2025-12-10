@@ -16,15 +16,15 @@ const authStore = useAuthStore();
 const MOCK_USER_OPTIONS: BasicOption[] = [
   {
     label: 'Super',
-    value: 'sean',
+    value: 'super',
   },
   {
     label: 'Admin',
     value: 'admin',
   },
   {
-    label: 'User',
-    value: 'jack',
+    label: 'Guest',
+    value: 'guest',
   },
 ];
 
@@ -42,7 +42,7 @@ const formSchema = computed((): VbenFormSchema[] => {
         .string()
         .min(1, { message: $t('authentication.selectAccount') })
         .optional()
-        .default('vben'),
+        .default('super'),
     },
     {
       component: 'VbenInput',
@@ -114,7 +114,6 @@ async function onSubmit(params: Recordable<any>) {
     :show-code-login="false"
     :show-third-party-login="false"
     :show-qrcode-login="false"
-    
     @submit="onSubmit"
   />
 </template>
