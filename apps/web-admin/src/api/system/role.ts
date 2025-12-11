@@ -71,8 +71,16 @@ function convertPermissionsToTree(
     const permissionCopy = { ...permission, children: [] };
     permissionMap.set(permission.id, permissionCopy);
 
-    // 分割权限名称，支持斜线(/)和冒号(:)作为分隔符
-    const nameParts = permission.name.split(/[:/]/).filter(Boolean);
+    // 分割权限名称，支持斜线(/)和冒号(:) (#)作为分隔符
+    const nameParts = permission.name.split(/[:/#]/).filter(Boolean);
+    // 如果 permission.path 末位是 /  特殊处理
+    if (permission.path.endsWith('/')) {
+      // 插入到倒数第二个位置
+      const methodPart = nameParts.pop();
+      nameParts.push('/');
+      methodPart && nameParts.push(methodPart);
+    }
+    // console.log('nameParts', nameParts);
     if (nameParts.length === 1) {
       // 根节点权限
       rootPermissions.push(permissionCopy);
