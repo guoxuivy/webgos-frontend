@@ -61,8 +61,8 @@ export function useFormSchema(): VbenFormSchema[] {
     {
       component: 'Select',
       componentProps: { allowClear: true, mode: 'multiple', options: [], placeholder: $t('system.user.selectRoles'), showSearch: true, style: { width: '100%' } },
-      fieldName: 'roleIds', label: $t('system.user.roleIds'),
-      help: '不修请留空',
+      fieldName: 'roleIds', label: $t('system.user.assignRoles'),
+      help: '不修改请留空',
     },
   ];
 }
@@ -138,7 +138,7 @@ export function useColumns<T = SystemUserApi.SystemUser>(
         if (!cellValue || !Array.isArray(cellValue)) return '';
         return cellValue.map(role => role.name).join(', ');
       },
-      title: $t('system.role.title'),
+      title: $t('system.user.assignRoles'),
       width: 200,
     },
     {

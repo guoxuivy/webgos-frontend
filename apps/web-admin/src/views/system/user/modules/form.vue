@@ -68,6 +68,12 @@ const [Drawer, drawerApi] = useVbenDrawer({
         if (id.value) {
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete (editData as any).password;
+
+          // 将角色对象数组转换为角色ID数组，以便在多选框中正确显示选中项
+          if (editData.roles && Array.isArray(editData.roles)) {
+            editData.roleIds = editData.roles.map((role: any) => role.id);
+            // 保留roles字段，因为可能在其他地方需要
+          }
         }
         formApi.setValues(editData);
       }
@@ -83,6 +89,7 @@ async function initRoleOptions() {
     const options = items.map((item: any) => ({
       label: item.name,
       value: item.id,
+      disabled: item.status === 0,
     }));
     
     // 直接更新整个角色字段的架构
@@ -98,7 +105,7 @@ async function initRoleOptions() {
           style: { width: '80%' },
         },
         fieldName: 'roleIds',
-        label: $t('system.user.roleIds'),
+        label: $t('system.user.assignRoles'),
       },
     ]);
     
