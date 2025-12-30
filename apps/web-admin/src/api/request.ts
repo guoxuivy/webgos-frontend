@@ -93,12 +93,24 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   //   }),
   // );
   // response数据解构
+  // client.addResponseInterceptor<HttpResponse>({
+  //   fulfilled: (response) => {
+  //     const { data: responseData, status } = response;
+
+  //     const { code, data } = responseData;
+  //     if (status >= 200 && status < 400 && code === 200) {
+  //       return data;
+  //     }
+  //     throw Object.assign({}, response, { response });
+  //   },
+  // });
+
   client.addResponseInterceptor<HttpResponse>({
     fulfilled: (response) => {
       const { data: responseData, status } = response;
 
       const { code, data } = responseData;
-      if (status >= 200 && status < 400 && code === 200) {
+      if (status ===200 && code === 0) {
         return data;
       }
       throw Object.assign({}, response, { response });
