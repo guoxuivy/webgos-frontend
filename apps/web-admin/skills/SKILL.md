@@ -504,9 +504,104 @@ emits('success');
 
 ---
 
-## 八、国际化技能
+## 八、树形组件开发技能
 
-### 8.1 多语言支持
+### 8.1 权限树组件使用
+
+```typescript
+const permissions = ref<DataNode[]>([]);
+const checkedKeys = ref<TreeProps['checkedKeys']>([]);
+
+// 加载权限数据
+async function loadPermissions() {
+  const permissionData = await getPermissions();
+  permissions.value = permissionData.map(transformPermission);
+}
+
+// 递归转换权限数据格式
+function transformPermission(permission): DataNode {
+  return {
+    ...permission,
+    key: permission.id,
+    children: permission.children?.map(transformPermission) || [],
+  };
+}
+```
+
+**关键技巧：**
+- 使用递归函数处理树形数据转换
+- 确保每个节点有 `key` 字段用于 Tree 组件识别
+- `children` 字段用于构建层级结构
+
+### 8.2 树形组件配置
+
+```typescript
+<Tree
+  v-model:checkedKeys="checkedKeys"
+  :tree-data="permissions"
+  :field-names="{ children: 'children', title: 'name', key: 'key' }"
+  checkable
+  class="h-full overflow-auto"
+  default-expand-all
+  @check="onCheck"
+>
+  <template #title="{ description, name }">
+    <span>{{ name }}</span>
+    <span v-if="description" class="ml-2 text-xs text-gray-500">{{ description }}</span>
+  </template>
+</Tree>
+```
+
+**关键技巧：**
+- `field-names` 配置字段映射关系
+- `checkable` 启用复选框功能
+- 使用插槽自定义节点渲染
+
+### 8.3 表单插槽集成
+
+```typescript
+// data.ts 中定义表单字段
+{
+  component: 'Input',
+  fieldName: 'menus',
+  label: $t('system.role.permissions'),
+  formItemClass: 'items-start',
+}
+
+// form.vue 中使用插槽
+<Form>
+  <template #menus="slotProps">
+    <Spin :spinning="loadingPermissions" wrapper-class-name="w-full">
+      <Tree
+        :tree-data="permissions"
+        multiple
+        bordered
+        :default-expanded-level="2"
+        v-bind="slotProps"
+        value-field="id"
+        label-field="meta.title"
+        icon-field="meta.icon"
+      >
+        <template #node="{ value }">
+          <IconifyIcon v-if="value.meta.icon" :icon="value.meta.icon" />
+          {{ $t(value.meta.title) }}
+        </template>
+      </Tree>
+    </Spin>
+  </template>
+</Form>
+```
+
+**关键技巧：**
+- 使用 `#fieldName` 插槽自定义表单字段
+- `slotProps` 包含表单绑定所需的属性
+- 通过 `v-bind="slotProps"` 实现双向绑定
+
+---
+
+## 九、国际化技能
+
+### 9.1 多语言支持
 
 ```typescript
 import { $t } from '#/locales';
@@ -521,34 +616,88 @@ content: $t('ui.actionMessage.deleting', [row.name]),
 - 使用 `$t()` 函数实现文本国际化
 - 支持参数传递 `$t('message', [param1, param2])`
 
+### 9.2 动态标题计算
+
+```typescript
+const getDrawerTitle = computed(() => {
+  return formData.value?.id
+    ? $t('common.edit', $t('system.role.name'))
+    : $t('common.create', $t('system.role.name'));
+});
+```
+
+**关键技巧：**
+- 使用 `computed` 动态计算标题
+- 支持嵌套国际化调用
+
 ---
 
-## 九、最佳实践总结
+## 十、数据转换模式
 
-### 9.1 代码组织
+### 10.1 API 响应数据转换
+
+```typescript
+async function loadPermissions() {
+  const res = await getMenuList();
+  permissions.value = res as unknown as DataNode[];
+}
+```
+
+### 10.2 权限数据格式转换
+
+```typescript
+function transformPermission(permission: SystemPermissionApi.SystemPermission): DataNode {
+  return {
+    ...permission,
+    key: permission.id,  // 适配 Tree 组件的 key 字段
+    children: permission.children?.map(transformPermission) || [],  // 递归转换子节点
+  };
+}
+```
+
+**关键技巧：**
+- 使用展开运算符保留原有属性
+- 递归处理嵌套数据结构
+- 类型断言确保类型安全
+
+---
+
+## 十一、最佳实践总结
+
+### 11.1 代码组织
 - 将表单 schema、表格列定义抽离到独立文件（如 `data.ts`）
 - 组件职责单一化，列表页、表单页、权限页分离
+- 使用组合式函数（useXxx）封装可复用逻辑
+- 类型定义统一管理，提升代码可维护性
 
-### 9.2 错误处理
+### 11.2 错误处理
 - 所有异步操作都有 catch 处理
 - 使用 loading 状态反馈操作进度
 - 操作失败时有友好的提示信息
+- 使用 try-finally 确保资源正确释放
 
-### 9.3 用户体验
-- 状态切换前二次确认
+### 11.3 用户体验
+- 状态切换前二次确认（confirm 弹窗）
 - 操作成功后自动刷新列表
 - 表单验证即时反馈
+- 按钮禁用状态防止重复提交（drawerApi.lock()）
 
-### 9.4 性能优化
+### 11.4 性能优化
 - `destroyOnClose: true` 避免内存泄漏
 - 权限树数据按需加载（首次打开时加载）
 - 表格使用虚拟滚动（`height: 'auto'`）
+- 数据转换使用递归函数处理树形结构
+
+### 11.5 类型安全
+- 使用 TypeScript 泛型增强类型推断
+- 类型断言确保 API 响应数据类型正确
+- 定义明确的接口类型（如 `SystemRoleApi.SystemRole`）
 
 ---
 
-## 十、常用代码模板
+## 十二、常用代码模板
 
-### 10.1 表格模板
+### 12.1 表格模板
 
 ```typescript
 const [Grid, gridApi] = useVbenVxeGrid({
@@ -562,7 +711,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 });
 ```
 
-### 10.2 抽屉模板
+### 12.2 抽屉模板
 
 ```typescript
 const [Drawer, drawerApi] = useVbenDrawer({
@@ -578,6 +727,286 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
 });
 ```
+
+### 12.3 树形权限组件模板
+
+```typescript
+const [Drawer, drawerApi] = useVbenDrawer({
+  async onConfirm() {
+    if (!formData.value) return;
+    drawerApi.lock();
+    try {
+      let permission_ids = Array.isArray(checkedKeys.value) 
+        ? checkedKeys.value.map(Number).filter(id => id >= 0) 
+        : [];
+      await assignPermissions({
+        role_id: Number(formData.value.id),
+        permission_ids,
+      });
+      message.success($t('common.saveSuccess'));
+      emits('success');
+      drawerApi.close();
+    } finally {
+      drawerApi.unlock();
+    }
+  },
+});
+```
+
+### 12.4 表单插槽自定义模板
+
+```typescript
+<Form>
+  <template #fieldName="slotProps">
+    <CustomComponent v-bind="slotProps" />
+  </template>
+</Form>
+```
+
+---
+
+## 十三、API 层设计技能
+
+### 13.1 Namespace 接口定义
+
+```typescript
+export namespace SystemRoleApi {
+  export interface SystemRole {
+    [key: string]: any;
+    created_at: string;
+    id: string;
+    menus: string[];
+    permission_ids: string[];
+    name: string;
+    remark?: string;
+    status: 0 | 1;
+  }
+}
+```
+
+**关键技巧：**
+- 使用 `namespace` 组织相关接口类型
+- `[key: string]: any` 允许动态属性扩展
+- 联合类型 `0 | 1` 约束枚举值
+
+### 13.2 请求客户端封装
+
+```typescript
+import { requestClient } from '#/api/request';
+
+async function getRoleList(params: Recordable<any>) {
+  return requestClient.get<{
+    items: Array<SystemRoleApi.SystemRole>;
+    total: number;
+  }>('/api/rbac/roles', { params });
+}
+```
+
+**关键技巧：**
+- 统一使用 `requestClient` 处理请求
+- 泛型定义响应数据结构
+- 集中导出 API 函数
+
+### 13.3 扁平数据转树形结构
+
+```typescript
+function convertPermissionsToTree(
+  permissions: Array<SystemPermissionApi.SystemPermission>,
+): Array<SystemPermissionApi.SystemPermission> {
+  const permissionMap = new Map<number, SystemPermissionApi.SystemPermission>();
+  const rootPermissions: Array<SystemPermissionApi.SystemPermission> = [];
+  
+  permissions.forEach((permission) => {
+    const permissionCopy = { ...permission, children: [] };
+    permissionMap.set(permission.id, permissionCopy);
+    
+    const nameParts = permission.name.split(/[:/#]/).filter(Boolean);
+    if (nameParts.length === 1) {
+      rootPermissions.push(permissionCopy);
+    } else {
+      // 构建层级路径
+      for (let i = 0; i < nameParts.length; i++) {
+        const path = nameParts.slice(0, i + 1).join('/');
+        // 创建临时节点或叶子节点
+      }
+    }
+  });
+  
+  return optimizeTree(rootPermissions);
+}
+```
+
+**关键技巧：**
+- 使用 `Map` 快速查找节点
+- 路径分割符支持多种格式（`/`、`:`、`#`）
+- 临时节点生成负数 ID 便于后续过滤
+
+### 13.4 树形结构优化
+
+```typescript
+function optimizeTree(
+  tree: Array<SystemPermissionApi.SystemPermission>,
+): Array<SystemPermissionApi.SystemPermission> {
+  tree.forEach((node) => {
+    const optimizedChildren = optimizeTree(node.children);
+    
+    // 单节点且为临时节点时省略
+    if (optimizedChildren.length === 1 && optimizedNode.id < 0) {
+      optimizedTree.push(optimizedChildren[0]);
+    } else {
+      optimizedTree.push(optimizedNode);
+    }
+  });
+  
+  return optimizedTree;
+}
+```
+
+**关键技巧：**
+- 递归优化子树结构
+- 省略只有一个子节点的临时节点
+- 简化树形展示层级
+
+---
+
+## 十四、高级技巧
+
+### 14.1 权限 ID 过滤处理
+
+```typescript
+// 过滤负数 ID（可能是临时节点）
+let permission_ids = Array.isArray(checkedKeys.value) 
+  ? checkedKeys.value.map(Number).filter(id => id >= 0) 
+  : [];
+```
+
+**应用场景：** 树形组件中可能存在临时节点或非权限节点，需要过滤掉无效 ID。
+
+### 14.2 异步数据加载策略
+
+```typescript
+async onOpenChange(isOpen) {
+  if (isOpen) {
+    const data = drawerApi.getData<SystemRoleApi.SystemRole>();
+    // 按需加载：只有首次打开时才加载权限数据
+    if (permissions.value.length === 0) {
+      await loadPermissions();
+    }
+    await nextTick();
+    if (data) {
+      formApi.setValues(data);
+    }
+  }
+}
+```
+
+**关键技巧：** 
+- 使用条件判断实现按需加载
+- `nextTick` 确保 DOM 更新后再设置表单值
+
+### 14.3 自定义图标渲染
+
+```typescript
+<Tree
+  :tree-data="permissions"
+  icon-field="meta.icon"
+>
+  <template #node="{ value }">
+    <IconifyIcon v-if="value.meta.icon" :icon="value.meta.icon" />
+    {{ $t(value.meta.title) }}
+  </template>
+</Tree>
+```
+
+**关键技巧：** 使用 `icon-field` 指定图标字段，通过插槽自定义渲染。
+
+### 14.4 多抽屉协同管理
+
+```typescript
+// 表单抽屉
+const [FormDrawer, formDrawerApi] = useVbenDrawer({
+  connectedComponent: Form,
+  destroyOnClose: true,
+});
+
+// 权限分配抽屉
+const [PermissionDrawer, permissionDrawerApi] = useVbenDrawer({
+  connectedComponent: Permission,
+  destroyOnClose: true,
+});
+
+// 操作分发
+function onActionClick(e: OnActionClickParams<SystemRoleApi.SystemRole>) {
+  switch (e.code) {
+    case 'edit': formDrawerApi.setData(row).open(); break;
+    case 'permission': permissionDrawerApi.setData(row).open(); break;
+    case 'delete': onDelete(row); break;
+  }
+}
+```
+
+**关键技巧：**
+- 一个页面可管理多个抽屉
+- 通过 `connectedComponent` 绑定内容组件
+- 操作码分发不同抽屉
+
+### 14.5 Modal.confirm 的 Promise 封装
+
+```typescript
+function confirm(content: string, title: string) {
+  return new Promise((resolve, reject) => {
+    Modal.confirm({
+      content,
+      onCancel() { reject(new Error('已取消')); },
+      onOk() { resolve(true); },
+      title,
+    });
+  });
+}
+
+// 使用
+await confirm('确定要删除吗？', '确认操作');
+```
+
+**关键技巧：**
+- 将回调式 API 转换为 Promise
+- 支持 async/await 语法
+- 统一错误处理
+
+---
+
+## 十五、表单高级配置
+
+### 15.1 自定义绑定属性
+
+```typescript
+{
+  component: 'Input',
+  fieldName: 'menus',
+  formItemClass: 'items-start',
+  label: $t('system.role.setPermissions'),
+  modelPropName: 'modelValue',  // 自定义 v-model 属性名
+}
+```
+
+**关键技巧：**
+- `modelPropName` 指定双向绑定的属性名
+- 适用于自定义组件的集成
+
+### 15.2 日期格式化显示
+
+```typescript
+{
+  field: 'created_at',
+  formatter: ({ cellValue }) => formatDateTime(cellValue),
+  title: $t('system.role.createAt'),
+  width: 200,
+}
+```
+
+**关键技巧：**
+- `formatter` 函数格式化单元格数据
+- 使用工具函数统一日期格式
 
 ---
 
