@@ -5,9 +5,9 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { SystemDeptApi } from '#/api/system/dept';
 
 import { z } from '#/adapter/form';
-import { getDeptList } from '#/api/system/dept';
+import { getDeptTree } from '#/api/system/dept';
 import { $t } from '#/locales';
-
+import { formatDateTime } from '@vben/utils';
 /**
  * 获取编辑表单的字段配置。如果没有使用多语言，可以直接export一个数组常量
  */
@@ -21,22 +21,35 @@ export function useSchema(): VbenFormSchema[] {
         .string()
         .min(2, $t('ui.formRules.minLength', [$t('system.dept.deptName'), 2]))
         .max(
-          20,
-          $t('ui.formRules.maxLength', [$t('system.dept.deptName'), 20]),
+          50,
+          $t('ui.formRules.maxLength', [$t('system.dept.deptName'), 50]),
         ),
     },
     {
       component: 'ApiTreeSelect',
       componentProps: {
         allowClear: true,
-        api: getDeptList,
+        api: getDeptTree,
         class: 'w-full',
         labelField: 'name',
         valueField: 'id',
         childrenField: 'children',
       },
-      fieldName: 'pid',
+      fieldName: 'parent_id',
       label: $t('system.dept.parentDept'),
+    },
+    {
+      component: 'ApiSelect',
+      componentProps: {
+        allowClear: true,
+        api: () =>
+          import('#/api/system/user').then((m) => m.getUserList({ page: 1, pageSize: 100 })),
+        class: 'w-full',
+        labelField: 'nickname',
+        valueField: 'id',
+      },
+      fieldName: 'leader_id',
+      label: $t('system.dept.leader'),
     },
     {
       component: 'RadioGroup',
@@ -55,7 +68,7 @@ export function useSchema(): VbenFormSchema[] {
     {
       component: 'Textarea',
       componentProps: {
-        maxLength: 50,
+        maxLength: 200,
         rows: 3,
         showCount: true,
       },
@@ -63,7 +76,7 @@ export function useSchema(): VbenFormSchema[] {
       label: $t('system.dept.remark'),
       rules: z
         .string()
-        .max(50, $t('ui.formRules.maxLength', [$t('system.dept.remark'), 50]))
+        .max(200, $t('ui.formRules.maxLength', [$t('system.dept.remark'), 200]))
         .optional(),
     },
   ];
@@ -84,25 +97,32 @@ export function useColumns(
       fixed: 'left',
       title: $t('system.dept.deptName'),
       treeNode: true,
-      width: 150,
+      width: 300,
+    },
+    {
+      field: 'id',
+      title: "部门ID",
+    },
+    {
+      field: 'leader.nickname',
+      title: "负责人",
     },
     {
       cellRender: { name: 'CellTag' },
       field: 'status',
       title: $t('system.dept.status'),
-      width: 100,
     },
     {
-      field: 'createTime',
-      title: $t('system.dept.createTime'),
-      width: 180,
+      field: 'created_at',
+      formatter: ({ cellValue }) => formatDateTime(cellValue),
+      title: $t('system.user.createdAt'),
+      width: 200,
     },
     {
       field: 'remark',
       title: $t('system.dept.remark'),
     },
     {
-      align: 'right',
       cellRender: {
         attrs: {
           nameField: 'name',

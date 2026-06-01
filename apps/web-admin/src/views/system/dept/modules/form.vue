@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Recordable } from '@vben/types';
+
 import type { SystemDeptApi } from '#/api/system/dept';
 
 import { computed, ref } from 'vue';
@@ -15,6 +17,8 @@ import { useSchema } from '../data';
 
 const emit = defineEmits(['success']);
 const formData = ref<SystemDeptApi.SystemDept>();
+const id = ref<number>();
+
 const getTitle = computed(() => {
   return formData.value?.id
     ? $t('ui.actionTitle.edit', [$t('system.dept.name')])
@@ -37,11 +41,14 @@ const [Modal, modalApi] = useVbenModal({
     const { valid } = await formApi.validate();
     if (valid) {
       modalApi.lock();
-      const data = await formApi.getValues();
+      const values = await formApi.getValues<Recordable<any>>();
       try {
-        await (formData.value?.id
-          ? updateDept(formData.value.id, data)
-          : createDept(data));
+        if (id.value) {
+          values.id = id.value;
+        }
+        await (id.value 
+          ? updateDept(values as Parameters<typeof updateDept>[0]) 
+          : createDept(values as Parameters<typeof createDept>[0]));
         modalApi.close();
         emit('success');
       } finally {
@@ -53,11 +60,15 @@ const [Modal, modalApi] = useVbenModal({
     if (isOpen) {
       const data = modalApi.getData<SystemDeptApi.SystemDept>();
       if (data) {
-        if (data.pid === 0) {
-          data.pid = undefined;
+        if (data.parent_id === 0) {
+          data.parent_id = undefined;
         }
         formData.value = data;
-        formApi.setValues(formData.value);
+        id.value = parseInt(data.id);
+        formApi.setValues(data);
+      } else {
+        id.value = undefined;
+        formApi.resetForm();
       }
     }
   },

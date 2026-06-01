@@ -11,7 +11,7 @@ import { Plus } from '@vben/icons';
 import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteDept, getDeptList } from '#/api/system/dept';
+import { deleteDept, getDeptTree } from '#/api/system/dept';
 import { $t } from '#/locales';
 
 import { useColumns } from './data';
@@ -35,7 +35,7 @@ function onEdit(row: SystemDeptApi.SystemDept) {
  * @param row
  */
 function onAppend(row: SystemDeptApi.SystemDept) {
-  formModalApi.setData({ pid: row.id }).open();
+  formModalApi.setData({ parent_id: parseInt(row.id) }).open();
 }
 
 /**
@@ -103,7 +103,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     proxyConfig: {
       ajax: {
         query: async (_params) => {
-          return await getDeptList();
+          return await getDeptTree();
         },
       },
     },
@@ -114,7 +114,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       zoom: true,
     },
     treeConfig: {
-      parentField: 'pid',
+      parentField: 'parent_id',
       rowField: 'id',
       transform: false,
     },
