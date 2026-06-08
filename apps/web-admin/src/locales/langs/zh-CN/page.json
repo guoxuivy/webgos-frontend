@@ -1,4 +1,8 @@
 {
+  "common": {
+    "expandAll": "展开全部",
+    "collapseAll": "收起全部"
+  },
   "auth": {
     "login": "登录",
     "register": "注册",

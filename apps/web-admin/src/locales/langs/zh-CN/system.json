@@ -1,4 +1,8 @@
 {
+  "common": {
+    "expandAll": "展开全部",
+    "collapseAll": "收起全部"
+  },
   "dept": {
     "list": "部门列表",
     "createTime": "创建时间",
@@ -8,7 +12,20 @@
     "parentDept": "上级部门",
     "remark": "备注",
     "status": "状态",
-    "title": "部门管理"
+    "removeMember": "移出",
+    "members": "成员",
+    "title": "部门管理",
+    "leader": "负责人",
+    "selectUsers": "选择用户",
+    "append": "新增下级",
+    "addMembers": "添加成员",
+    "addUsersSuccess": "添加成员成功",
+    "addUsersFailed": "添加成员失败",
+    "setLeader": "设为负责人",
+    "settingLeader": "正在设为负责人: %s",
+    "setLeaderSuccess": "设为负责人成功: %s",
+    "removingMember": "正在移出成员: %s",
+    "removeMemberSuccess": "移出成员成功: %s"
   },
   "menu": {
     "list": "菜单列表",

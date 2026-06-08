@@ -1,6 +1,5 @@
 import type { VxeTableGridOptions } from '@vben/plugins/vxe-table';
 
-import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { SystemDeptApi } from '#/api/system/dept';
 
@@ -8,10 +7,8 @@ import { z } from '#/adapter/form';
 import { getDeptTree } from '#/api/system/dept';
 import { $t } from '#/locales';
 import { formatDateTime } from '@vben/utils';
-/**
- * 获取编辑表单的字段配置。如果没有使用多语言，可以直接export一个数组常量
- */
-export function useSchema(): VbenFormSchema[] {
+
+export function useSchema() {
   return [
     {
       component: 'Input',
@@ -39,19 +36,6 @@ export function useSchema(): VbenFormSchema[] {
       label: $t('system.dept.parentDept'),
     },
     {
-      component: 'ApiSelect',
-      componentProps: {
-        allowClear: true,
-        api: () =>
-          import('#/api/system/user').then((m) => m.getUserList({ page: 1, pageSize: 100 })),
-        class: 'w-full',
-        labelField: 'nickname',
-        valueField: 'id',
-      },
-      fieldName: 'leader_id',
-      label: $t('system.dept.leader'),
-    },
-    {
       component: 'RadioGroup',
       componentProps: {
         buttonStyle: 'solid',
@@ -66,12 +50,7 @@ export function useSchema(): VbenFormSchema[] {
       label: $t('system.dept.status'),
     },
     {
-      component: 'Textarea',
-      componentProps: {
-        maxLength: 200,
-        rows: 3,
-        showCount: true,
-      },
+      component: 'Input',
       fieldName: 'remark',
       label: $t('system.dept.remark'),
       rules: z
@@ -82,11 +61,6 @@ export function useSchema(): VbenFormSchema[] {
   ];
 }
 
-/**
- * 获取表格列配置
- * @description 使用函数的形式返回列数据而不是直接export一个Array常量，是为了响应语言切换时重新翻译表头
- * @param onActionClick 表格操作按钮点击事件
- */
 export function useColumns(
   onActionClick?: OnActionClickFn<SystemDeptApi.SystemDept>,
 ): VxeTableGridOptions<SystemDeptApi.SystemDept>['columns'] {
@@ -97,30 +71,29 @@ export function useColumns(
       fixed: 'left',
       title: $t('system.dept.deptName'),
       treeNode: true,
-      width: 300,
-    },
-    {
-      field: 'id',
-      title: "部门ID",
+      width: 280,
     },
     {
       field: 'leader.nickname',
-      title: "负责人",
+      title: $t('system.dept.leader'),
+      width: 120,
     },
     {
       cellRender: { name: 'CellTag' },
       field: 'status',
       title: $t('system.dept.status'),
+      width: 100,
     },
     {
       field: 'created_at',
-      formatter: ({ cellValue }) => formatDateTime(cellValue),
+      formatter: ({ row }) => formatDateTime(row.created_at),
       title: $t('system.user.createdAt'),
-      width: 200,
+      width: 180,
     },
     {
       field: 'remark',
       title: $t('system.dept.remark'),
+      minWidth: 150,
     },
     {
       cellRender: {
@@ -133,14 +106,36 @@ export function useColumns(
         options: [
           {
             code: 'append',
-            text: '新增下级',
+            text: $t('system.dept.append'),
+            show: (row: SystemDeptApi.SystemDept) => !row.is_member_node,
           },
-          'edit', // 默认的编辑按钮
           {
-            code: 'delete', // 默认的删除按钮
+            code: 'addMembers',
+            text: $t('system.dept.addMembers'),
+            show: (row: SystemDeptApi.SystemDept) => !row.is_member_node,
+          },
+          {
+            code: 'edit',
+            text: $t('common.edit'),
+            show: (row: SystemDeptApi.SystemDept) => !row.is_member_node,
+          },
+          {
+            code: 'delete',
+            text: $t('common.delete'),
+            show: (row: SystemDeptApi.SystemDept) => !row.is_member_node,
             disabled: (row: SystemDeptApi.SystemDept) => {
               return !!(row.children && row.children.length > 0);
             },
+          },
+          {
+            code: 'removeMember',
+            text: $t('system.dept.removeMember'),
+            show: (row: SystemDeptApi.SystemDept) => !!row.is_member_node && !!row.original_user_id,
+          },
+          {
+            code: 'setLeader',
+            text: $t('system.dept.setLeader'),
+            show: (row: SystemDeptApi.SystemDept) => !!row.is_member_node && !!row.original_user_id && !!row.department_id,
           },
         ],
       },
@@ -149,7 +144,7 @@ export function useColumns(
       headerAlign: 'center',
       showOverflow: false,
       title: $t('system.dept.operation'),
-      width: 200,
+      width: 240,
     },
   ];
 }

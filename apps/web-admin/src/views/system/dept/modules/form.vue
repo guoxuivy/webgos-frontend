@@ -29,6 +29,7 @@ const [Form, formApi] = useVbenForm({
   layout: 'vertical',
   schema: useSchema(),
   showDefaultActions: false,
+  wrapperClass: 'grid-cols-1 md:grid-cols-2',
 });
 
 function resetForm() {
@@ -76,8 +77,9 @@ const [Modal, modalApi] = useVbenModal({
 </script>
 
 <template>
-  <Modal :title="getTitle">
+  <Modal :title="getTitle" width="800px">
     <Form class="mx-4" />
+    
     <template #prepend-footer>
       <div class="flex-auto">
         <Button type="primary" danger @click="resetForm">
