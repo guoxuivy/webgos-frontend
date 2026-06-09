@@ -51,7 +51,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         title: $t('system.user.phone'),
       },
     ],
-    height: 400,
+    height: '500',
     keepSource: true,
     pagerConfig: {
       enabled: true,
@@ -79,6 +79,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 });
 
 const [Modal, modalApi] = useVbenModal({
+  class: 'w-[50%]',
   async onConfirm() {
     const records = gridApi.grid.getCheckboxRecords() as SystemUserApi.SystemUser[];
     const userIds = records.map((r) => parseInt(r.id!));
@@ -99,7 +100,7 @@ defineExpose({ open });
 </script>
 
 <template>
-  <Modal :title="$t('system.dept.selectUsers')" width="900px">
+  <Modal :title="$t('system.dept.selectUsers')">
     <Grid />
   </Modal>
 </template>
