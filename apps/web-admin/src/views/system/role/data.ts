@@ -35,7 +35,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'Input',
-      fieldName: 'menus',
+      fieldName: 'menu_ids',
       formItemClass: 'items-start',
       label: $t('system.role.setPermissions'),
       modelPropName: 'modelValue',
@@ -124,10 +124,6 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
           {
             code: 'edit',
             text: $t('common.edit'),
-          },
-          {
-            code: 'permission',
-            text: $t('system.role.setAPIPermissions'),
           },
           {
             code: 'delete',

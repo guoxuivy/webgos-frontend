@@ -17,9 +17,16 @@ import { deleteMenu, getMenuList, SystemMenuApi } from '#/api/system/menu';
 
 import { useColumns } from './data';
 import Form from './modules/form.vue';
+import Permission from './modules/permission.vue';
 
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Form,
+  destroyOnClose: true,
+});
+
+// 接口授权抽屉
+const [PermissionDrawer, permissionDrawerApi] = useVbenDrawer({
+  connectedComponent: Permission,
   destroyOnClose: true,
 });
 
@@ -72,6 +79,10 @@ function onActionClick({
       onEdit(row);
       break;
     }
+    case 'permission': {
+      onPermission(row);
+      break;
+    }
     default: {
       break;
     }
@@ -89,6 +100,10 @@ function onCreate() {
 }
 function onAppend(row: SystemMenuApi.SystemMenu) {
   formDrawerApi.setData({ pid: row.id }).open();
+}
+
+function onPermission(row: SystemMenuApi.SystemMenu) {
+  permissionDrawerApi.setData(row).open();
 }
 
 function onDelete(row: SystemMenuApi.SystemMenu) {
@@ -113,6 +128,7 @@ function onDelete(row: SystemMenuApi.SystemMenu) {
 <template>
   <Page auto-content-height>
     <FormDrawer @success="onRefresh" />
+    <PermissionDrawer @success="onRefresh" />
     <Grid>
       <template #toolbar-tools>
         <Button type="primary" @click="onCreate">

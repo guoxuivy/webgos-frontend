@@ -1,6 +1,8 @@
 import type { Recordable } from '@vben/types';
 
 import { requestClient } from '#/api/request';
+import type { SystemPermissionApi } from '#/api/system/role';
+import { getPermissions } from '#/api/system/role';
 
 export namespace SystemMenuApi {
   /** 徽标颜色集合 */
@@ -24,8 +26,6 @@ export namespace SystemMenuApi {
   /** 系统菜单 */
   export interface SystemMenu {
     [key: string]: any;
-    /** 后端权限标识 */
-    authCode: string;
     /** 子级 */
     children?: SystemMenu[];
     /** 组件 */
@@ -154,10 +154,34 @@ async function deleteMenu(id: string) {
   // return requestClient.post(`/api/menu/delete/${id}`);
 }
 
+/**
+ * 获取菜单下已绑定的接口权限列表
+ * GET /api/menu/permissions/:id
+ */
+async function getMenuPermissions(id: string) {
+  return requestClient.get<Array<SystemPermissionApi.SystemPermission>>(
+    `/api/menu/permissions/${id}`,
+  );
+}
+
+/**
+ * 给菜单分配接口权限（多对多，同一权限可绑多个菜单）
+ * POST /api/menu/permissions
+ */
+async function assignMenuPermissions(data: {
+  menu_id: number;
+  permission_ids: number[];
+}) {
+  return requestClient.post(`/api/menu/permissions`, data);
+}
+
 export {
+  assignMenuPermissions,
   createMenu,
   deleteMenu,
   getMenuList,
+  getMenuPermissions,
+  getPermissions,
   isMenuNameExists,
   isMenuPathExists,
   updateMenu,

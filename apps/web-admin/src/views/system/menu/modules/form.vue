@@ -238,20 +238,6 @@ const schema: VbenFormSchema[] = [
     rules: z.string().url($t('ui.formRules.invalidURL')),
   },
   {
-    component: 'Input',
-    dependencies: {
-      rules: (values) => {
-        return values.type === 'button' ? 'required' : null;
-      },
-      show: (values) => {
-        return ['button', 'catalog', 'embedded', 'menu'].includes(values.type);
-      },
-      triggerFields: ['type'],
-    },
-    fieldName: 'authCode',
-    label: $t('system.menu.authCode'),
-  },
-  {
     component: 'RadioGroup',
     componentProps: {
       buttonStyle: 'solid',

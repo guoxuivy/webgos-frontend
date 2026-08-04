@@ -18,16 +18,9 @@ import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
-import Permission from './modules/permission.vue';
 
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Form,
-  destroyOnClose: true,
-});
-
-// 添加权限分配抽屉
-const [PermissionDrawer, permissionDrawerApi] = useVbenDrawer({
-  connectedComponent: Permission,
   destroyOnClose: true,
 });
 
@@ -75,10 +68,6 @@ function onActionClick(e: OnActionClickParams<SystemRoleApi.SystemRole>) {
     }
     case 'edit': {
       onEdit(e.row);
-      break;
-    }
-    case 'permission': {
-      onPermission(e.row);
       break;
     }
   }
@@ -153,10 +142,6 @@ function onDelete(row: SystemRoleApi.SystemRole) {
     });
 }
 
-function onPermission(row: SystemRoleApi.SystemRole) {
-  permissionDrawerApi.setData(row).open();
-}
-
 function onRefresh() {
   gridApi.query();
 }
@@ -168,7 +153,6 @@ function onCreate() {
 <template>
   <Page auto-content-height>
     <FormDrawer @success="onRefresh" />
-    <PermissionDrawer @success="onRefresh" /> <!-- 添加权限抽屉 -->
     <Grid :table-title="$t('system.role.list')">
       <template #toolbar-tools>
         <Button type="primary" @click="onCreate">

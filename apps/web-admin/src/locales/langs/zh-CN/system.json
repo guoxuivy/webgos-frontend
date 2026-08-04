@@ -35,7 +35,6 @@
     "activePathMustExist": "该路径未能找到有效的菜单",
     "advancedSettings": "其它设置",
     "affixTab": "固定在标签",
-    "authCode": "权限标识",
     "badge": "徽章内容",
     "badgeVariants": "徽标样式",
     "badgeType": {
@@ -65,7 +64,8 @@
     "typeCatalog": "目录",
     "typeEmbedded": "内嵌",
     "typeLink": "外链",
-    "typeMenu": "菜单"
+    "typeMenu": "菜单",
+    "setPermissions": "授权"
   },
   "role": {
     "title": "角色管理",
@@ -79,8 +79,7 @@
     "createAt": "创建时间",
     "operation": "操作",
     "permissions": "权限",
-    "setPermissions": "菜单授权",
-    "setAPIPermissions": "授权"
+    "setPermissions": "菜单授权"
   },
   "user": {
     "list": "用户列表",

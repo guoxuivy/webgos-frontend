@@ -42,11 +42,6 @@ export function useColumns(
       width: 100,
     },
     {
-      field: 'authCode',
-      title: $t('system.menu.authCode'),
-      width: 200,
-    },
-    {
       align: 'left',
       field: 'path',
       title: $t('system.menu.path'),
@@ -94,6 +89,10 @@ export function useColumns(
             code: 'append',
             text: '新增下级',
           },
+          {
+            code: 'permission',
+            text: $t('system.menu.setPermissions'),
+          },
           'edit', // 默认的编辑按钮
           'delete', // 默认的删除按钮
         ],
@@ -103,7 +102,7 @@ export function useColumns(
       headerAlign: 'center',
       showOverflow: false,
       title: $t('system.menu.operation'),
-      width: 200,
+      width: 220,
     },
   ];
 }

@@ -22,13 +22,13 @@
     "typeButton": "Button",
     "typeLink": "Link",
     "typeEmbedded": "Embedded",
+    "setPermissions": "API Permissions",
     "icon": "Icon",
     "activeIcon": "Active Icon",
     "activePath": "Active Path",
     "path": "Route Path",
     "component": "Component",
     "status": "Status",
-    "authCode": "Auth Code",
     "badge": "Badge",
     "operation": "Operation",
     "linkSrc": "Link Address",
@@ -61,8 +61,7 @@
     "createAt": "Creation At",
     "operation": "Operation",
     "permissions": "Permissions",
-    "setPermissions": "Permissions",
-    "setAPIPermissions": "API Permissions"
+    "setPermissions": "Permissions"
   },
   "user": {
     "list": "User List",
