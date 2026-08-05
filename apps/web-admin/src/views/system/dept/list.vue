@@ -8,7 +8,7 @@ import type { SystemDeptApi } from '#/api/system/dept';
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 import { $t } from '@vben/locales';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
 import { Button, message } from 'ant-design-vue';
 
@@ -75,24 +75,17 @@ function transformDeptTree(data: SystemDeptApi.SystemDept[]): SystemDeptApi.Syst
     
     if (users.length > 0) {
       const deptId = parseInt(dept.id);
-      const memberNode: SystemDeptApi.SystemDept = {
-        id: `members_${dept.id}`,
-        name: `[ ${$t('system.dept.members')}列表 ]`,
+      const memberNodes: SystemDeptApi.SystemDept[] = users.map(user => ({
+        id: `user_${user.id}`,
+        name: user.username,
         parent_id: deptId,
-        status: dept.status,
+        status: user.status,
         is_member_node: true,
-        children: users.map(user => ({
-          id: `user_${user.id}`,
-          name: user.username,
-          parent_id: parseInt(`members_${dept.id}`),
-          status: user.status,
-          is_member_node: true,
-          remark: user.nickname,
-          original_user_id: user.id,
-          department_id: deptId,
-        })),
-      };
-      children.push(memberNode);
+        remark: user.nickname,
+        original_user_id: user.id,
+        department_id: deptId,
+      }));
+      children.push(...memberNodes);
     }
     
     result.push({
@@ -118,6 +111,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
           return transformDeptTree(result);
         },
       },
+      // 数据加载完成后默认展开全部树节点
+      afterQuery: () => {
+        nextTick(() => gridApi.grid?.setAllTreeExpand(true));
+      },
+    },
+    rowClassName: ({ row }) => {
+      return row.is_member_node ? 'dept-member-row' : 'dept-row';
     },
     rowConfig: {
       keyField: 'id',
@@ -132,6 +132,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       parentField: 'parent_id',
       rowField: 'id',
       transform: false,
+      expandAll: true,
     },
   } as VxeTableGridOptions<SystemDeptApi.SystemDept>,
 });
@@ -273,3 +274,12 @@ function onAddUsersSuccess(userIds: number[]) {
     </Grid>
   </Page>
 </template>
+
+<style scoped>
+:deep(.dept-member-row) {
+  color: #91c0ec;
+}
+:deep(.dept-member-row:hover) {
+  background-color: rgba(64, 169, 255, 0.16);
+}
+</style>

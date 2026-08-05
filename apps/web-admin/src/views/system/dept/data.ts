@@ -74,7 +74,7 @@ export function useColumns(
       width: 280,
     },
     {
-      field: 'leader.nickname',
+      field: 'leader.username',
       title: $t('system.dept.leader'),
       width: 120,
     },
