@@ -44,7 +44,7 @@ async function createDept(data: {
   leader_id?: number;
   remark?: string;
   status?: number;
-  order?: number;
+  sort?: number;
 }) {
   return requestClient.post('/api/department', data);
 }
@@ -56,7 +56,7 @@ async function updateDept(data: {
   leader_id?: number;
   remark?: string;
   status?: number;
-  order?: number;
+  sort?: number;
 }) {
   return requestClient.put('/api/department', data);
 }

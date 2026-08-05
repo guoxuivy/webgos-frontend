@@ -71,7 +71,7 @@ export namespace SystemMenuApi {
       /** 是否在新窗口打开 */
       openInNewWindow?: boolean;
       /** 菜单排序 */
-      order?: number;
+      sort?: number;
       /** 额外的路由参数 */
       query?: Recordable<any>;
       /** 菜单标题 */
