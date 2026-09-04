@@ -8,7 +8,6 @@ export namespace SystemRoleApi {
     created_at: string;
     id: string;
     menu_ids: number[];
-    permission_ids: string[];
     name: string;
     remark?: string;
     status: 0 | 1;
@@ -19,12 +18,12 @@ export namespace SystemRoleApi {
  * 权限管理相关API
  */
 export namespace SystemPermissionApi {
-  /** 权限点 */
+  /** 权限点（实时路由投影，key = path#method） */
   export interface SystemPermission {
     [key: string]: any;
-    /** 权限ID */
-    id: number;
-    /** 权限名称 */
+    /** 权限键，path#method */
+    key: string;
+    /** 权限名称（= key） */
     name: string;
     /** 权限描述 */
     description: string;
@@ -32,12 +31,6 @@ export namespace SystemPermissionApi {
     path: string;
     /** 请求方法 */
     method: string;
-    /** 创建时间 */
-    created_at?: string;
-    /** 更新时间 */
-    updated_at?: string;
-    /** 父级ID */
-    pid?: number;
     /** 子节点 */
     children?: SystemPermission[];
   }
@@ -45,14 +38,15 @@ export namespace SystemPermissionApi {
 
 /**
  * 将权限列表转换为树形结构
+ * 权限 key 形如 path#method（如 /api/menu/:id#GET），按最后一个 # 拆分为路径与方法，
+ * 路径按 / 拆分（: 视为普通路径段，不再作为分隔符），避免 /api/menu/:POST 与 /api/menu:POST 被错误合并。
  * @param permissions 扁平的权限列表
  * @returns 树形结构的权限列表
  */
 function convertPermissionsToTree(
   permissions: Array<SystemPermissionApi.SystemPermission>,
 ): Array<SystemPermissionApi.SystemPermission> {
-  // 创建权限映射，用于快速查找
-  const permissionMap = new Map<number, SystemPermissionApi.SystemPermission>();
+  const permissionMap = new Map<string, SystemPermissionApi.SystemPermission>();
   const rootPermissions: Array<SystemPermissionApi.SystemPermission> = [];
   const tempNodes: Record<
     string,
@@ -63,53 +57,50 @@ function convertPermissionsToTree(
     }
   > = {};
 
-  //todo /api/menu/:POST  和 /api/menu:POST 应该作为2条记录，现在后面的直接没了，需要修复
-
-  // 处理每个权限
   permissions.forEach((permission) => {
-    // 深拷贝权限对象
-    const permissionCopy = { ...permission, children: [] };
-    permissionMap.set(permission.id, permissionCopy);
+    const permissionCopy = {
+      ...permission,
+      children: [],
+    } as SystemPermissionApi.SystemPermission;
+    permissionMap.set(permission.key, permissionCopy);
 
-    // 分割权限名称，支持斜线(/)和冒号(:) (#)作为分隔符
-    const nameParts = permission.name.split(/[:/#]/).filter(Boolean);
-    // 如果 permission.path 末位是 /  特殊处理
-    if (permission.path.endsWith('/')) {
-      // 插入到倒数第二个位置
-      const methodPart = nameParts.pop();
-      nameParts.push('/');
-      methodPart && nameParts.push(methodPart);
-    }
-    // console.log('nameParts', nameParts);
-    if (nameParts.length === 1) {
-      // 根节点权限
+    // 按最后一个 # 拆分出路径与方法
+    const hashIndex = permission.key.lastIndexOf('#');
+    const path =
+      hashIndex >= 0 ? permission.key.slice(0, hashIndex) : permission.key;
+    const method = hashIndex >= 0 ? permission.key.slice(hashIndex + 1) : '';
+
+    // 路径按 / 拆分，方法作为末段；虚拟中间节点使用 v: 前缀键，便于提交时过滤
+    const parts = path.split('/').filter(Boolean).concat(method ? [method] : []);
+    if (parts.length === 0) {
       rootPermissions.push(permissionCopy);
-    } else {
-      // 非根节点权限，需要构建临时路径
-      for (let i = 0; i < nameParts.length; i++) {
-        const path = nameParts.slice(0, i + 1).join('/');
-        const level = i;
-        const pathParts = nameParts.slice(0, i + 1);
+      return;
+    }
 
-        if (!tempNodes[path]) {
-          if (i === nameParts.length - 1) {
-            // 叶子节点，使用真实权限
-            tempNodes[path] = { permission: permissionCopy, level, pathParts };
-          } else {
-            // 中间节点，创建临时权限
-            tempNodes[path] = {
-              permission: {
-                id: -Math.abs(hashCode(path)), // 生成临时ID
-                name: path,
-                description: ``,
-                path: '',
-                method: '',
-                children: [],
-              },
-              level,
-              pathParts,
-            };
-          }
+    for (let i = 0; i < parts.length; i++) {
+      const nodePath = parts.slice(0, i + 1).join('/');
+      const level = i;
+      const pathParts = parts.slice(0, i + 1);
+
+      if (!tempNodes[nodePath]) {
+        if (i === parts.length - 1) {
+          // 叶子节点，使用真实权限（key 为 perm_key）
+          tempNodes[nodePath] = { permission: permissionCopy, level, pathParts };
+        } else {
+          // 中间节点，创建虚拟权限（key 以 v: 前缀，非真实 perm_key）
+          tempNodes[nodePath] = {
+            permission: {
+              key: `v:${nodePath}`,
+              name: nodePath,
+              description: '',
+              path: '',
+              method: '',
+              isVirtual: true,
+              children: [],
+            } as SystemPermissionApi.SystemPermission,
+            level,
+            pathParts,
+          };
         }
       }
     }
@@ -118,27 +109,24 @@ function convertPermissionsToTree(
   // 构建树形结构
   Object.values(tempNodes).forEach(({ permission, level, pathParts }) => {
     if (level === 0) {
-      // 顶级节点
-      if (!rootPermissions.find((p) => p.name === permission.name)) {
+      if (!rootPermissions.find((p) => p.key === permission.key)) {
         rootPermissions.push(permission);
       }
     } else {
-      // 非顶级节点，找到父节点
       const parentPath = pathParts.slice(0, -1).join('/');
       const parent = tempNodes[parentPath]?.permission;
       if (parent) {
         if (!parent.children) {
           parent.children = [];
         }
-        // 检查是否已存在该子节点
-        if (!parent.children.find((child) => child.id === permission.id)) {
+        if (!parent.children.find((child) => child.key === permission.key)) {
           parent.children.push(permission);
         }
       }
     }
   });
 
-  // 优化树形结构：非终端节点只有一个子节点时省略该节点
+  // 优化树形结构：非终端虚拟节点只有一个子节点时省略该节点
   return optimizeTree(rootPermissions);
 }
 
@@ -154,19 +142,21 @@ function optimizeTree(
   const optimizedTree: Array<SystemPermissionApi.SystemPermission> = [];
 
   tree.forEach((node) => {
-    // 深拷贝节点
-    const optimizedNode = { ...node, children: [] };
+    const optimizedNode = {
+      ...node,
+      children: [],
+    } as SystemPermissionApi.SystemPermission & { isVirtual?: boolean };
 
-    // 如果节点有子节点，递归优化子节点
     if (node.children && node.children.length > 0) {
       const optimizedChildren = optimizeTree(node.children);
-      (optimizedNode as any).children = optimizedChildren;
+      optimizedNode.children = optimizedChildren;
 
-      // 如果只有一个子节点，且当前节点是临时生成的节点（ID为负数），则省略该节点
-      if (optimizedChildren.length === 1 && optimizedNode.id < 0) {
-        // 将当前节点的属性合并到子节点
-        const child = { ...optimizedChildren[0] };
-        optimizedTree.push(child as SystemPermissionApi.SystemPermission);
+      // 仅当当前节点是临时生成的虚拟节点（isVirtual）且只有一个子节点时，省略该节点
+      if (optimizedChildren.length === 1 && optimizedNode.isVirtual) {
+        const only = optimizedChildren[0];
+        if (only) {
+          optimizedTree.push(only);
+        }
       } else {
         optimizedTree.push(optimizedNode);
       }
@@ -177,17 +167,6 @@ function optimizeTree(
   });
 
   return optimizedTree;
-}
-
-// 为字符串添加hashCode方法
-function hashCode(str: string) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return hash;
 }
 
 /**
@@ -202,26 +181,6 @@ async function getPermissions(params: Record<string, any> = {}) {
   });
   // 将扁平权限转换为树形结构
   return convertPermissionsToTree(permissions);
-}
-
-/**
- * 删除权限
- * @param id 权限 ID
- */
-async function deletePermission(id: number) {
-  return requestClient.delete(`/api/rbac/permission/${id}`);
-}
-
-/**
- * 给角色分配api权限
- * post /api/rbac/assign_permissions
- * @param data 权限分配数据
- */
-async function assignPermissions(data: {
-  permission_ids: number[];
-  role_id: number;
-}) {
-  return requestClient.post(`/api/rbac/assign_permissions`, data);
 }
 
 /**
@@ -268,8 +227,6 @@ async function deleteRole(id: string) {
 }
 
 export {
-  deletePermission,
-  assignPermissions,
   createRole,
   deleteRole,
   getPermissions,

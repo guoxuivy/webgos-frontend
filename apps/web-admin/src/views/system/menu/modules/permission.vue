@@ -15,6 +15,8 @@ import type { DataNode } from 'ant-design-vue/es/tree';
 const emits = defineEmits<{ success: [] }>();
 
 const formData = ref<SystemMenuApi.SystemMenu>();
+// 菜单 id 单一来源：查询与保存都使用它，避免开门/保存阶段取到不一致的 id
+const menuId = ref<number | undefined>();
 const checkedKeys = ref<TreeProps['checkedKeys']>([]);
 const permissions = ref<DataNode[]>([]);
 
@@ -24,13 +26,17 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
     drawerApi.lock();
     try {
-      let permission_ids = Array.isArray(checkedKeys.value) ? checkedKeys.value.map(Number) : [];
-      // 过滤负数ID（树的中间虚拟节点）
-      permission_ids = permission_ids.filter((id) => id >= 0);
+      let perm_keys = Array.isArray(checkedKeys.value)
+        ? (checkedKeys.value as Array<string>)
+        : [];
+      // 过滤仅保留真实权限键（含 #），剔除树的中间虚拟节点（v: 前缀）
+      perm_keys = perm_keys.filter(
+        (k) => typeof k === 'string' && k.includes('#'),
+      );
 
       await assignMenuPermissions({
-        menu_id: Number(formData.value.id),
-        permission_ids,
+        menu_id: menuId.value as number,
+        perm_keys,
       });
 
       message.success($t('common.saveSuccess'));
@@ -49,12 +55,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
       const data = drawerApi.getData<SystemMenuApi.SystemMenu>();
       if (data) {
         formData.value = data;
+        menuId.value = Number(data.id);
         // 加载全量权限树
         await loadPermissions();
         // 加载该菜单已绑定的权限并设为选中
         try {
-          const bound = await getMenuPermissions(String(data.id));
-          checkedKeys.value = bound.map((p) => p.id) || [];
+          const bound = await getMenuPermissions(String(menuId.value));
+          checkedKeys.value = (bound || []).map((p) => p.perm_key);
         } catch {
           checkedKeys.value = [];
         }
@@ -76,7 +83,7 @@ async function loadPermissions() {
 function transformPermission(permission: SystemPermissionApi.SystemPermission): DataNode {
   return {
     ...permission,
-    key: permission.id,
+    key: permission.key,
     children: permission.children?.map(transformPermission) || [],
   };
 }

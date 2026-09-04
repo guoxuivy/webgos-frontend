@@ -1,7 +1,6 @@
 import type { Recordable } from '@vben/types';
 
 import { requestClient } from '#/api/request';
-import type { SystemPermissionApi } from '#/api/system/role';
 import { getPermissions } from '#/api/system/role';
 
 export namespace SystemMenuApi {
@@ -90,6 +89,13 @@ export namespace SystemMenuApi {
   }
 }
 
+/** 菜单已绑定的权限键 */
+export interface SystemMenuPermission {
+  menu_id: number;
+  perm_key: string;
+  description: string;
+}
+
 /**
  * 获取菜单数据列表
  * system/menu/list
@@ -159,7 +165,7 @@ async function deleteMenu(id: string) {
  * GET /api/menu/permissions/:id
  */
 async function getMenuPermissions(id: string) {
-  return requestClient.get<Array<SystemPermissionApi.SystemPermission>>(
+  return requestClient.get<Array<SystemMenuPermission>>(
     `/api/menu/permissions/${id}`,
   );
 }
@@ -170,7 +176,7 @@ async function getMenuPermissions(id: string) {
  */
 async function assignMenuPermissions(data: {
   menu_id: number;
-  permission_ids: number[];
+  perm_keys: string[];
 }) {
   return requestClient.post(`/api/menu/permissions`, data);
 }

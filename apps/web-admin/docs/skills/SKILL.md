@@ -522,7 +522,7 @@ async function loadPermissions() {
 function transformPermission(permission): DataNode {
   return {
     ...permission,
-    key: permission.id,
+    key: permission.key,
     children: permission.children?.map(transformPermission) || [],
   };
 }
@@ -649,7 +649,7 @@ async function loadPermissions() {
 function transformPermission(permission: SystemPermissionApi.SystemPermission): DataNode {
   return {
     ...permission,
-    key: permission.id,  // 适配 Tree 组件的 key 字段
+    key: permission.key,  // 适配 Tree 组件的 key 字段
     children: permission.children?.map(transformPermission) || [],  // 递归转换子节点
   };
 }
@@ -736,12 +736,14 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (!formData.value) return;
     drawerApi.lock();
     try {
-      let permission_ids = Array.isArray(checkedKeys.value) 
-        ? checkedKeys.value.map(Number).filter(id => id >= 0) 
+      // 仅保留真实权限键（path#method，含 #），剔除树形中间虚拟节点（v: 前缀）
+      let perm_keys = Array.isArray(checkedKeys.value)
+        ? (checkedKeys.value as string[])
         : [];
-      await assignPermissions({
-        role_id: Number(formData.value.id),
-        permission_ids,
+      perm_keys = perm_keys.filter((k) => typeof k === 'string' && k.includes('#'));
+      await assignMenuPermissions({
+        menu_id: Number(formData.value.id),
+        perm_keys,
       });
       message.success($t('common.saveSuccess'));
       emits('success');
@@ -773,12 +775,11 @@ const [Drawer, drawerApi] = useVbenDrawer({
 export namespace SystemRoleApi {
   export interface SystemRole {
     [key: string]: any;
-    created_at: string;
-    id: string;
-    menus: string[];
-    permission_ids: string[];
+    id: number;
     name: string;
-    remark?: string;
+    menus: SystemMenuApi.SystemMenu[];
+    menu_ids: number[];
+    remark: string;
     status: 0 | 1;
   }
 }
@@ -813,33 +814,38 @@ async function getRoleList(params: Recordable<any>) {
 function convertPermissionsToTree(
   permissions: Array<SystemPermissionApi.SystemPermission>,
 ): Array<SystemPermissionApi.SystemPermission> {
-  const permissionMap = new Map<number, SystemPermissionApi.SystemPermission>();
+  const permissionMap = new Map<string, SystemPermissionApi.SystemPermission>();
   const rootPermissions: Array<SystemPermissionApi.SystemPermission> = [];
-  
+  const tempNodes: Record<string, SystemPermissionApi.SystemPermission> = {};
+
   permissions.forEach((permission) => {
-    const permissionCopy = { ...permission, children: [] };
-    permissionMap.set(permission.id, permissionCopy);
-    
-    const nameParts = permission.name.split(/[:/#]/).filter(Boolean);
-    if (nameParts.length === 1) {
-      rootPermissions.push(permissionCopy);
-    } else {
-      // 构建层级路径
-      for (let i = 0; i < nameParts.length; i++) {
-        const path = nameParts.slice(0, i + 1).join('/');
-        // 创建临时节点或叶子节点
+    // 权限 key 形如 path#method（如 /api/menu/:id#GET），按最后一个 # 拆分为路径与方法
+    const hashIndex = permission.key.lastIndexOf('#');
+    const path = hashIndex >= 0 ? permission.key.slice(0, hashIndex) : permission.key;
+    const method = hashIndex >= 0 ? permission.key.slice(hashIndex + 1) : '';
+    // 路径按 / 拆分，方法作为末段；虚拟中间节点使用 v: 前缀键
+    const parts = path.split('/').filter(Boolean).concat(method ? [method] : []);
+
+    for (let i = 0; i < parts.length; i++) {
+      const nodePath = parts.slice(0, i + 1).join('/');
+      if (!tempNodes[nodePath]) {
+        tempNodes[nodePath] =
+          i === parts.length - 1
+            ? { ...permission, children: [] } // 叶子节点，key 为真实权限键 path#method
+            : { key: `v:${nodePath}`, name: nodePath, children: [], isVirtual: true };
       }
     }
   });
-  
+
+  // 按层级拼接父子关系后交给 optimizeTree 折叠单子节点的虚拟节点
   return optimizeTree(rootPermissions);
 }
 ```
 
 **关键技巧：**
-- 使用 `Map` 快速查找节点
-- 路径分割符支持多种格式（`/`、`:`、`#`）
-- 临时节点生成负数 ID 便于后续过滤
+- 使用 `Map` / 对象快速查找节点
+- 权限 key 形如 `path#method`，按最后一个 `#` 拆分为路径与方法，路径再按 `/` 拆分（`:` 视为普通路径段，避免 `/api/menu/:POST` 与 `/api/menu:POST` 被错误合并）
+- 中间虚拟节点使用 `v:` 前缀键，真实权限键为 `path#method`（含 `#`），便于提交时过滤
 
 ### 13.4 树形结构优化
 
@@ -847,40 +853,44 @@ function convertPermissionsToTree(
 function optimizeTree(
   tree: Array<SystemPermissionApi.SystemPermission>,
 ): Array<SystemPermissionApi.SystemPermission> {
+  const optimizedTree: Array<SystemPermissionApi.SystemPermission> = [];
   tree.forEach((node) => {
-    const optimizedChildren = optimizeTree(node.children);
-    
-    // 单节点且为临时节点时省略
-    if (optimizedChildren.length === 1 && optimizedNode.id < 0) {
-      optimizedTree.push(optimizedChildren[0]);
+    const optimizedChildren = optimizeTree(node.children ?? []);
+    const optimizedNode = { ...node, children: optimizedChildren };
+
+    // 仅当当前节点是虚拟节点（isVirtual）且只有一个子节点时省略该节点
+    if (optimizedChildren.length === 1 && (optimizedNode as any).isVirtual) {
+      const only = optimizedChildren[0];
+      if (only) optimizedTree.push(only);
     } else {
       optimizedTree.push(optimizedNode);
     }
   });
-  
+
   return optimizedTree;
 }
 ```
 
 **关键技巧：**
 - 递归优化子树结构
-- 省略只有一个子节点的临时节点
+- 省略只有一个子节点的虚拟节点（isVirtual）
 - 简化树形展示层级
 
 ---
 
 ## 十四、高级技巧
 
-### 14.1 权限 ID 过滤处理
+### 14.1 权限键过滤处理
 
 ```typescript
-// 过滤负数 ID（可能是临时节点）
-let permission_ids = Array.isArray(checkedKeys.value) 
-  ? checkedKeys.value.map(Number).filter(id => id >= 0) 
+// 仅保留真实权限键（path#method，含 #），剔除树形中间虚拟节点（v: 前缀）
+let perm_keys = Array.isArray(checkedKeys.value)
+  ? (checkedKeys.value as string[])
   : [];
+perm_keys = perm_keys.filter((k) => typeof k === 'string' && k.includes('#'));
 ```
 
-**应用场景：** 树形组件中可能存在临时节点或非权限节点，需要过滤掉无效 ID。
+**应用场景：** 树形权限组件由真实权限键（`path#method`）与 `v:` 前缀的虚拟中间节点混合组成，提交绑定（如 `assignMenuPermissions`）时仅保留含 `#` 的真实权限键。
 
 ### 14.2 异步数据加载策略
 

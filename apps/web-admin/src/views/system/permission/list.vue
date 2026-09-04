@@ -1,74 +1,22 @@
 <script lang="ts" setup>
-import type {
-  OnActionClickParams,
-  VxeTableGridOptions,
-} from '#/adapter/vxe-table';
-import type { SystemPermissionApi } from '#/api/system/role';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { $t } from '#/locales';
 import { Page } from '@vben/common-ui';
-import { message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getPermissions, deletePermission } from '#/api/system/role';
+import { getPermissions } from '#/api/system/role';
 import { useColumns } from './data';
 import { useGridFormSchema } from './data';
 
 
 
-/**
- * 删除权限
- * @param row
- */
-function onDelete(row: SystemPermissionApi.SystemPermission) {
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting', [row.name]),
-    duration: 0,
-    key: 'action_process_msg',
-  });
-  deletePermission(row.id)
-    .then(() => {
-      message.success({
-        content: $t('ui.actionMessage.deleteSuccess', [row.name]),
-        key: 'action_process_msg',
-      });
-      gridApi.query();
-    })
-    .catch(() => {
-      hideLoading();
-    });
-}
-
-/**
- * 表格操作按钮的回调函数
- */
-function onActionClick({
-  code,
-  row,
-}: OnActionClickParams<SystemPermissionApi.SystemPermission>) {
-  switch (code) {
-    // case 'append': {
-    //   onAppend(row);
-    //   break;
-    // }
-    case 'delete': {
-      onDelete(row);
-      break;
-    }
-    // case 'edit': {
-    //   onEdit(row);
-    //   break;
-    // }
-  }
-}
-
-const [Grid, gridApi] = useVbenVxeGrid({
+const [Grid] = useVbenVxeGrid({
   formOptions: {
     schema: useGridFormSchema(),
     submitOnChange: true,
   },
   gridOptions: {
-    columns: useColumns(onActionClick),
+    columns: useColumns(),
     height: 'auto',
     keepSource: true,
     // 关闭分页
@@ -85,7 +33,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: {
-      keyField: 'id',
+      keyField: 'key',
     },
     toolbarConfig: {
       custom: true,
@@ -97,7 +45,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     // 树配置
     treeConfig: {
       parentField: 'pid',
-      rowField: 'id',
+      rowField: 'key',
       childrenField: 'children',
       transform: false,
       // 默认展开全部节点
